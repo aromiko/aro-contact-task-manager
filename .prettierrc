@@ -13,6 +13,5 @@
     "^[./]"
   ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
-  "tailwindStylesheet": "./src/app/globals.css"
+  "importOrderSortSpecifiers": true
 }
