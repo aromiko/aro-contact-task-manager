@@ -29,7 +29,11 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session && !req.nextUrl.pathname.startsWith("/login")) {
+  if (
+    !session &&
+    !req.nextUrl.pathname.startsWith("/login") &&
+    !req.nextUrl.pathname.startsWith("/signup")
+  ) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
