@@ -30,7 +30,7 @@ export default async function TasksPage() {
   return (
     <div className="space-y-8 p-6">
       <section className="space-y-2">
-        <TasksTable tasks={openTasks} tableTitle="Open Tasks" />
+        <TasksTable tasks={openTasks} tableTitle="Open Tasks" showActions />
       </section>
 
       <section className="space-y-2">

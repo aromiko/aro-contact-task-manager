@@ -1,4 +1,7 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,6 +12,9 @@ import {
 } from "@/components/ui/table";
 import { Task } from "@/lib/types/task";
 import { normalizeRef } from "@/lib/utils";
+import { useState, useTransition } from "react";
+
+import { completeTask } from "./actions";
 
 function getAssignment(task: Task) {
   const assignment = Array.isArray(task.task_assignments)
@@ -24,9 +30,22 @@ function getAssignment(task: Task) {
 type TasksTableProps = {
   tableTitle?: string;
   tasks: Task[];
+  showActions?: boolean;
 };
 
-const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
+const TasksTable = ({ tableTitle, tasks, showActions }: TasksTableProps) => {
+  const [isPending, startTransition] = useTransition();
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+
+  const handleCompleteTask = (taskId: string) => {
+    setCompletingTaskId(taskId);
+
+    startTransition(async () => {
+      await completeTask(taskId);
+      setCompletingTaskId(null);
+    });
+  };
+
   return (
     <>
       {tableTitle && <h2 className="text-lg font-semibold">{tableTitle}</h2>}
@@ -36,6 +55,9 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
             <TableHead>Task</TableHead>
             <TableHead>Assigned To</TableHead>
             <TableHead>Status</TableHead>
+            {showActions && (
+              <TableHead className="text-right">Action</TableHead>
+            )}
           </TableRow>
         </TableHeader>
 
@@ -43,7 +65,7 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
           {tasks.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={3}
+                colSpan={showActions ? 4 : 3}
                 className="text-muted-foreground text-center"
               >
                 No tasks
@@ -70,6 +92,22 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
                     <Badge variant="outline">Completed</Badge>
                   )}
                 </TableCell>
+
+                {showActions && (
+                  <TableCell className="text-right">
+                    {task.status === "open" && (
+                      <Button
+                        size="sm"
+                        disabled={isPending && completingTaskId === task.id}
+                        onClick={() => handleCompleteTask(task.id)}
+                      >
+                        {isPending && completingTaskId === task.id
+                          ? "Completing…"
+                          : "Complete"}
+                      </Button>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}
