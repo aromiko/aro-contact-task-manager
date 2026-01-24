@@ -4,14 +4,12 @@ export type Person = {
   email: string | null;
   phone: string | null;
   created_at: string;
-  business?: {
+  business: {
     id: string;
     name: string;
   } | null;
-  person_tags?: {
-    tag: {
-      id: string;
-      name: string;
-    };
+  tags: {
+    id: string;
+    name: string;
   }[];
 };

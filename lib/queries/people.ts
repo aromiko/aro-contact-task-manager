@@ -18,7 +18,7 @@ export const getPeople = async (
   supabase: SupabaseClient,
   range: { from: number; to: number },
 ) => {
-  return supabase
+  const { data, error } = await supabase
     .from("people")
     .select(
       `
@@ -41,6 +41,20 @@ export const getPeople = async (
     )
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
+
+  if (error) return { data: null, error };
+
+  const normalized =
+    data?.map((p) => ({
+      ...p,
+      business: p.business?.[0] ?? null,
+      tags:
+        p.person_tags?.flatMap((pt) =>
+          Array.isArray(pt.tag) ? pt.tag : [pt.tag],
+        ) ?? [],
+    })) ?? [];
+
+  return { data: normalized, error: null };
 };
 
 export const getPeopleByBusiness = async (

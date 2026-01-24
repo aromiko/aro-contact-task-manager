@@ -1,3 +1,4 @@
+import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { getPeopleAndBusinesses } from "@/lib/queries/lookups";
@@ -56,6 +57,7 @@ const TasksPage = async (props: TasksPageProps) => {
   return (
     <div className="container mx-auto space-y-8 p-6">
       <h1 className="text-4xl font-bold">TASK LIST</h1>
+      <AddTaskDialog people={people ?? []} businesses={businesses ?? []} />
 
       <section className="space-y-2">
         <TasksTable

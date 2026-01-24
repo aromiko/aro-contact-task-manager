@@ -31,8 +31,6 @@ const PeoplePage = async (props: PeoplePageProps) => {
 
   if (error) return <pre>{error.message}</pre>;
 
-  console.log(people);
-
   return (
     <div className="container mx-auto space-y-8 p-6">
       <h1 className="text-4xl font-bold">PEOPLE</h1>

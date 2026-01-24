@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import { Person } from "@/lib/types/people";
 
+import { Badge } from "../ui/badge";
+
 type PeopleTableProps = {
   people: Person[];
 };
@@ -17,15 +19,15 @@ type PeopleTableProps = {
 const PeopleTable = ({ people }: PeopleTableProps) => {
   return (
     <div className="rounded-md border">
-      <Table>
+      <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
         <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Business</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead className="text-right">Created</TableHead>
+          <TableRow className="bg-primary hover:bg-primary/90">
+            <TableHead className="text-white">Name</TableHead>
+            <TableHead className="text-white">Email</TableHead>
+            <TableHead className="text-white">Phone</TableHead>
+            <TableHead className="text-white">Business</TableHead>
+            <TableHead className="text-white">Tags</TableHead>
+            <TableHead className="text-right text-white">Created</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -33,10 +35,10 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
           {people.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className="text-muted-foreground text-center"
               >
-                No people found
+                No people
               </TableCell>
             </TableRow>
           )}
@@ -45,22 +47,27 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
             <TableRow key={person.id}>
               <TableCell className="font-medium">{person.name}</TableCell>
 
-              <TableCell>{person.email ?? "—"}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {person.email ?? "—"}
+              </TableCell>
 
-              <TableCell>{person.phone ?? "—"}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {person.phone ?? "—"}
+              </TableCell>
 
               <TableCell>{person.business?.name ?? "—"}</TableCell>
 
               <TableCell>
-                {person.person_tags && person.person_tags.length > 0 ? (
+                {person.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {person.person_tags.map(({ tag }) => (
-                      <span
+                    {person.tags.map((tag) => (
+                      <Badge
                         key={tag.id}
-                        className="rounded bg-yellow-400 px-2 py-0.5 text-xs"
+                        variant="outline"
+                        className="bg-blue-50 font-normal text-blue-700"
                       >
                         {tag.name}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 ) : (
@@ -69,7 +76,13 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
               </TableCell>
 
               <TableCell className="text-muted-foreground text-right">
-                {new Date(person.created_at).toLocaleDateString()}
+                {new Date(person.created_at).toLocaleString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </TableCell>
             </TableRow>
           ))}
