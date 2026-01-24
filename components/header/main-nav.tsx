@@ -7,7 +7,7 @@ type MainNavProps = {
 const MainNav = ({ user }: MainNavProps) => {
   return (
     <header className="flex items-center justify-between border-b px-6 py-3">
-      <h1 className="font-semibold">Task Manager</h1>
+      <span className="font-semibold">Task Manager</span>
       <nav className="flex gap-4 text-sm">
         <a href="/tasks">Tasks</a>
         <a href="/contacts/people">People</a>
