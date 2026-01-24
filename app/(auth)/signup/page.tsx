@@ -13,8 +13,13 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = async () => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -23,59 +28,69 @@ export default function SignupPage() {
       },
     });
 
-    if (error) setError(error.message);
-    else window.location.href = "/tasks";
+    setLoading(false);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      window.location.href = "/tasks";
+    }
   };
 
   return (
     <section className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
+          <CardTitle>Sign up</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+        <CardContent>
+          <form className="space-y-4" onSubmit={handleSignup}>
+            <div className="space-y-1">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            <div className="space-y-1">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
-          <Button className="w-full" onClick={handleSignup}>
-            Create account
-          </Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating account…" : "Create account"}
+            </Button>
 
-          <p className="text-muted-foreground text-center text-sm">
-            Already have an account?{" "}
-            <a href="/login" className="underline">
-              Log in
-            </a>
-          </p>
+            <p className="text-muted-foreground text-center text-sm">
+              Already have an account?{" "}
+              <a href="/login" className="underline">
+                Log in
+              </a>
+            </p>
+          </form>
         </CardContent>
       </Card>
     </section>
