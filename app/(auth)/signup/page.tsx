@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useState } from "react";
 
@@ -15,9 +19,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: {
-          name,
-        },
+        data: { name },
       },
     });
 
@@ -26,48 +28,56 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold">Sign up</h1>
+    <section className="flex min-h-screen items-center justify-center">
+      <Card className="w-full max-w-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl">Sign up</CardTitle>
+        </CardHeader>
 
-        <input
-          className="w-full border p-2"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-        <input
-          className="w-full border p-2"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          <div className="space-y-1">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <input
-          className="w-full border p-2"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
-        <button
-          className="w-full rounded bg-black p-2 text-white"
-          onClick={handleSignup}
-        >
-          Create account
-        </button>
+          <Button className="w-full" onClick={handleSignup}>
+            Create account
+          </Button>
 
-        <p className="text-center text-sm">
-          Already have an account?{" "}
-          <a href="/login" className="underline">
-            Log in
-          </a>
-        </p>
-      </div>
-    </div>
+          <p className="text-muted-foreground text-center text-sm">
+            Already have an account?{" "}
+            <a href="/login" className="underline">
+              Log in
+            </a>
+          </p>
+        </CardContent>
+      </Card>
+    </section>
   );
 }

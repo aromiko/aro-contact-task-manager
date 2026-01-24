@@ -1,9 +1,9 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerActionClient } from "@/lib/supabase/server-actions";
 
 import TasksTable from "./tasks-table";
 
 export default async function TasksPage() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerActionClient();
 
   const { data: tasks, error } = await supabase
     .from("tasks")

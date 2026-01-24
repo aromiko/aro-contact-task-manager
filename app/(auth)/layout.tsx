@@ -7,8 +7,8 @@ export default function AuthLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen items-center justify-center">
-        {children}
+      <body>
+        <main className="min-h-screen w-full">{children}</main>
       </body>
     </html>
   );
