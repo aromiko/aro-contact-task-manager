@@ -28,10 +28,10 @@ export default async function TasksPage() {
   const completedTasks = tasks.filter((t) => t.status === "completed");
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="container mx-auto space-y-8 p-6">
       <h1 className="text-4xl font-bold">TASK LIST</h1>
       <section className="space-y-2">
-        <TasksTable tasks={openTasks} tableTitle="Open Tasks" showActions />
+        <TasksTable tasks={openTasks} tableTitle="Open Tasks" />
       </section>
 
       <section className="space-y-2">

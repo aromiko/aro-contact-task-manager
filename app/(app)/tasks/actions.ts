@@ -18,3 +18,18 @@ export async function completeTask(taskId: string) {
   // Revalidate tasks page
   revalidatePath("/tasks");
 }
+
+export async function reopenTask(taskId: string) {
+  const supabase = await createSupabaseServerActionClient();
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ status: "open" })
+    .eq("id", taskId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/tasks");
+}

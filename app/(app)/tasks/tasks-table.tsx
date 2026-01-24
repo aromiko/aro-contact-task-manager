@@ -14,7 +14,7 @@ import { Task } from "@/lib/types/task";
 import { normalizeRef } from "@/lib/utils";
 import { useState, useTransition } from "react";
 
-import { completeTask } from "./actions";
+import { completeTask, reopenTask } from "./actions";
 
 function getAssignment(task: Task) {
   const assignment = Array.isArray(task.task_assignments)
@@ -30,18 +30,28 @@ function getAssignment(task: Task) {
 type TasksTableProps = {
   tableTitle?: string;
   tasks: Task[];
-  showActions?: boolean;
 };
 
-const TasksTable = ({ tableTitle, tasks, showActions }: TasksTableProps) => {
+const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
   const [isPending, startTransition] = useTransition();
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const isCompleting = (taskId: string) =>
+    isPending && completingTaskId === taskId;
 
   const handleCompleteTask = (taskId: string) => {
     setCompletingTaskId(taskId);
 
     startTransition(async () => {
       await completeTask(taskId);
+      setCompletingTaskId(null);
+    });
+  };
+
+  const handleReopenTask = (taskId: string) => {
+    setCompletingTaskId(taskId);
+
+    startTransition(async () => {
+      await reopenTask(taskId);
       setCompletingTaskId(null);
     });
   };
@@ -55,9 +65,7 @@ const TasksTable = ({ tableTitle, tasks, showActions }: TasksTableProps) => {
             <TableHead>Task</TableHead>
             <TableHead>Assigned To</TableHead>
             <TableHead>Status</TableHead>
-            {showActions && (
-              <TableHead className="text-right">Action</TableHead>
-            )}
+            <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -65,7 +73,7 @@ const TasksTable = ({ tableTitle, tasks, showActions }: TasksTableProps) => {
           {tasks.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={showActions ? 4 : 3}
+                colSpan={4}
                 className="text-muted-foreground text-center"
               >
                 No tasks
@@ -93,21 +101,28 @@ const TasksTable = ({ tableTitle, tasks, showActions }: TasksTableProps) => {
                   )}
                 </TableCell>
 
-                {showActions && (
-                  <TableCell className="text-right">
-                    {task.status === "open" && (
-                      <Button
-                        size="sm"
-                        disabled={isPending && completingTaskId === task.id}
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        {isPending && completingTaskId === task.id
-                          ? "Completing…"
-                          : "Complete"}
-                      </Button>
-                    )}
-                  </TableCell>
-                )}
+                <TableCell className="text-right">
+                  {task.status === "open" && (
+                    <Button
+                      size="sm"
+                      disabled={isCompleting(task.id)}
+                      onClick={() => handleCompleteTask(task.id)}
+                    >
+                      {isCompleting(task.id) ? "Completing…" : "Complete"}
+                    </Button>
+                  )}
+
+                  {task.status === "completed" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isCompleting(task.id)}
+                      onClick={() => handleReopenTask(task.id)}
+                    >
+                      {isCompleting(task.id) ? "Reopening…" : "Reopen"}
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             );
           })}
