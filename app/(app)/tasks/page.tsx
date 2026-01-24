@@ -18,7 +18,7 @@ type TasksPageProps = {
 
 const PAGE_SIZE = 10;
 
-export default async function TasksPage(props: TasksPageProps) {
+const TasksPage = async (props: TasksPageProps) => {
   const searchParams = await props.searchParams;
 
   const rawOpenPage = Math.max(1, Number(searchParams.openPage) || 1);
@@ -88,4 +88,6 @@ export default async function TasksPage(props: TasksPageProps) {
       </section>
     </div>
   );
-}
+};
+
+export default TasksPage;

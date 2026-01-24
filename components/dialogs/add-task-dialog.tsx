@@ -26,7 +26,7 @@ type Props = {
   businesses: Option[];
 };
 
-export default function AddTaskDialog({ people, businesses }: Props) {
+const AddTaskDialog = ({ people, businesses }: Props) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"person" | "business" | null>(null);
@@ -122,4 +122,6 @@ export default function AddTaskDialog({ people, businesses }: Props) {
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default AddTaskDialog;

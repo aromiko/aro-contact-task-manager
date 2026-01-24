@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export async function getPeopleAndBusinesses(supabase: SupabaseClient) {
+export const getPeopleAndBusinesses = async (supabase: SupabaseClient) => {
   const [{ data: people }, { data: businesses }] = await Promise.all([
     supabase.from("people").select("id, name").order("name"),
     supabase.from("businesses").select("id, name").order("name"),
@@ -10,4 +10,4 @@ export async function getPeopleAndBusinesses(supabase: SupabaseClient) {
     people: people ?? [],
     businesses: businesses ?? [],
   };
-}
+};

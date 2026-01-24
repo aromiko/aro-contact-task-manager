@@ -1,10 +1,10 @@
 import "@/app/assets/styles/globals.css";
 
-export default function AuthLayout({
+const AuthLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html lang="en">
       <body>
@@ -12,4 +12,6 @@ export default function AuthLayout({
       </body>
     </html>
   );
-}
+};
+
+export default AuthLayout;

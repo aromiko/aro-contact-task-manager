@@ -4,7 +4,7 @@ import { createSupabaseServerActionClient } from "@/lib/supabase/server-actions"
 import { TaskAssignPayload } from "@/lib/types/task";
 import { revalidatePath } from "next/cache";
 
-export async function completeTask(taskId: string) {
+export const completeTask = async (taskId: string) => {
   const supabase = await createSupabaseServerActionClient();
 
   const { error } = await supabase
@@ -17,9 +17,9 @@ export async function completeTask(taskId: string) {
   }
 
   revalidatePath("/tasks");
-}
+};
 
-export async function reopenTask(taskId: string) {
+export const reopenTask = async (taskId: string) => {
   const supabase = await createSupabaseServerActionClient();
 
   const { error } = await supabase
@@ -32,9 +32,12 @@ export async function reopenTask(taskId: string) {
   }
 
   revalidatePath("/tasks");
-}
+};
 
-export async function assignTask(taskId: string, payload: TaskAssignPayload) {
+export const assignTask = async (
+  taskId: string,
+  payload: TaskAssignPayload,
+) => {
   const supabase = await createSupabaseServerActionClient();
 
   await supabase.from("task_assignments").delete().eq("task_id", taskId);
@@ -48,13 +51,13 @@ export async function assignTask(taskId: string, payload: TaskAssignPayload) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/tasks");
-}
+};
 
-export async function createTask(payload: {
+export const createTask = async (payload: {
   title: string;
   personId?: string;
   businessId?: string;
-}) {
+}) => {
   const supabase = await createSupabaseServerActionClient();
 
   const { data: task, error } = await supabase
@@ -76,9 +79,9 @@ export async function createTask(payload: {
   }
 
   revalidatePath("/tasks");
-}
+};
 
-export async function deleteTask(taskId: string) {
+export const deleteTask = async (taskId: string) => {
   const supabase = await createSupabaseServerActionClient();
 
   await supabase.from("task_assignments").delete().eq("task_id", taskId);
@@ -88,4 +91,4 @@ export async function deleteTask(taskId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/tasks");
-}
+};

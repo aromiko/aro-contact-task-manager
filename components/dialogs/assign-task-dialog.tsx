@@ -26,11 +26,7 @@ type Props = {
   businesses: Option[];
 };
 
-export default function AssignTaskDialog({
-  taskId,
-  people,
-  businesses,
-}: Props) {
+const AssignTaskDialog = ({ taskId, people, businesses }: Props) => {
   const [type, setType] = useState<"person" | "business" | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -116,4 +112,6 @@ export default function AssignTaskDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default AssignTaskDialog;

@@ -16,11 +16,11 @@ type TablePaginationProps = {
   paramKey: string;
 };
 
-export default function TablePagination({
+const TablePagination = ({
   page,
   totalPages,
   paramKey,
-}: TablePaginationProps) {
+}: TablePaginationProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -69,4 +69,6 @@ export default function TablePagination({
       </PaginationContent>
     </Pagination>
   );
-}
+};
+
+export default TablePagination;

@@ -19,7 +19,7 @@ import { completeTask, deleteTask, reopenTask } from "../../lib/actions/tasks";
 import AddTaskDialog from "../dialogs/add-task-dialog";
 import AssignTaskDialog from "../dialogs/assign-task-dialog";
 
-function getAssignment(task: Task) {
+const getAssignment = (task: Task) => {
   const assignment = Array.isArray(task.task_assignments)
     ? task.task_assignments[0]
     : task.task_assignments;
@@ -28,7 +28,7 @@ function getAssignment(task: Task) {
     person: assignment?.person ?? null,
     business: assignment?.business ?? null,
   };
-}
+};
 
 type Option = { id: string; name: string };
 

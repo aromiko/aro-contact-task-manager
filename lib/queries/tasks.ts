@@ -1,11 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-type PaginationRange = {
-  from: number;
-  to: number;
-};
+import { PaginationRange } from "../types/pagination";
 
-export async function getTaskCounts(supabase: SupabaseClient) {
+export const getTaskCounts = async (supabase: SupabaseClient) => {
   const [{ count: openCount }, { count: completedCount }] = await Promise.all([
     supabase
       .from("tasks")
@@ -22,12 +19,12 @@ export async function getTaskCounts(supabase: SupabaseClient) {
     openCount,
     completedCount,
   };
-}
+};
 
-export async function getOpenTasks(
+export const getOpenTasks = async (
   supabase: SupabaseClient,
   range: PaginationRange,
-) {
+) => {
   return supabase
     .from("tasks")
     .select(
@@ -45,12 +42,12 @@ export async function getOpenTasks(
     .eq("status", "open")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
-}
+};
 
-export async function getCompletedTasks(
+export const getCompletedTasks = async (
   supabase: SupabaseClient,
   range: PaginationRange,
-) {
+) => {
   return supabase
     .from("tasks")
     .select(
@@ -68,4 +65,4 @@ export async function getCompletedTasks(
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
-}
+};
