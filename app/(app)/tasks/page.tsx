@@ -12,6 +12,7 @@ export default async function TasksPage() {
     id,
     title,
     status,
+    created_at,
     task_assignments (
       person:people!task_assignments_person_id_fkey ( id, name ),
       business:businesses!task_assignments_business_id_fkey ( id, name )

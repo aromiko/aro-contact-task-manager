@@ -63,6 +63,7 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
         <TableHeader>
           <TableRow>
             <TableHead>Task</TableHead>
+            <TableHead>Created</TableHead>
             <TableHead>Assigned To</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Action</TableHead>
@@ -73,7 +74,7 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
           {tasks.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={5}
                 className="text-muted-foreground text-center"
               >
                 No tasks
@@ -90,6 +91,16 @@ const TasksTable = ({ tableTitle, tasks }: TasksTableProps) => {
             return (
               <TableRow key={task.id}>
                 <TableCell className="font-medium">{task.title}</TableCell>
+
+                <TableCell className="text-muted-foreground">
+                  {new Date(task.created_at).toLocaleString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </TableCell>
 
                 <TableCell>{assignedName}</TableCell>
 

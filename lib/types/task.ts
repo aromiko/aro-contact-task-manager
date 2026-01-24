@@ -22,5 +22,6 @@ export type Task = {
   id: string;
   title: string;
   status: "open" | "completed";
+  created_at: string;
   task_assignments?: TaskAssignment | TaskAssignment[];
 };
