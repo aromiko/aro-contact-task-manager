@@ -1,56 +1,89 @@
-import { createSupabaseServerActionClient } from "@/lib/supabase/server-actions";
+import TablePagination from "@/components/pagination/pagination";
+import TasksTable from "@/components/tables/tasks-table";
+import { getPeopleAndBusinesses } from "@/lib/queries/lookups";
+import {
+  getCompletedTasks,
+  getOpenTasks,
+  getTaskCounts,
+} from "@/lib/queries/tasks";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPagination } from "@/lib/utils/pagination";
 
-import TasksTable from "../../../components/tables/tasks-table";
+type TasksPageProps = {
+  searchParams: Promise<{
+    openPage?: string;
+    completedPage?: string;
+  }>;
+};
 
-export default async function TasksPage() {
-  const supabase = await createSupabaseServerActionClient();
+const PAGE_SIZE = 10;
 
-  const { data: tasks, error } = await supabase
-    .from("tasks")
-    .select(
-      `
-    id,
-    title,
-    status,
-    created_at,
-    task_assignments (
-      person:people!task_assignments_person_id_fkey ( id, name ),
-      business:businesses!task_assignments_business_id_fkey ( id, name )
-    )
-  `,
-    )
-    .order("created_at", { ascending: false });
+export default async function TasksPage(props: TasksPageProps) {
+  const searchParams = await props.searchParams;
 
-  if (error) {
-    return <pre>{error.message}</pre>;
-  }
+  const rawOpenPage = Math.max(1, Number(searchParams.openPage) || 1);
+  const rawCompletedPage = Math.max(1, Number(searchParams.completedPage) || 1);
 
-  const openTasks = tasks.filter((t) => t.status === "open");
-  const completedTasks = tasks.filter((t) => t.status === "completed");
+  const supabase = await createSupabaseServerClient();
 
-  const [{ data: people }, { data: businesses }] = await Promise.all([
-    supabase.from("people").select("id, name").order("name"),
-    supabase.from("businesses").select("id, name").order("name"),
+  const { openCount, completedCount } = await getTaskCounts(supabase);
+
+  const openPagination = getPagination({
+    rawPage: rawOpenPage,
+    totalCount: openCount,
+    pageSize: PAGE_SIZE,
+  });
+
+  const completedPagination = getPagination({
+    rawPage: rawCompletedPage,
+    totalCount: completedCount,
+    pageSize: PAGE_SIZE,
+  });
+
+  const [
+    { data: openTasks, error: openError },
+    { data: completedTasks, error: completedError },
+    { people, businesses },
+  ] = await Promise.all([
+    getOpenTasks(supabase, openPagination),
+    getCompletedTasks(supabase, completedPagination),
+    getPeopleAndBusinesses(supabase),
   ]);
+
+  if (openError) return <pre>{openError.message}</pre>;
+  if (completedError) return <pre>{completedError.message}</pre>;
 
   return (
     <div className="container mx-auto space-y-8 p-6">
       <h1 className="text-4xl font-bold">TASK LIST</h1>
+
       <section className="space-y-2">
         <TasksTable
-          tasks={openTasks}
+          tasks={openTasks ?? []}
           tableTitle="Open Tasks"
-          people={people ?? []}
-          businesses={businesses ?? []}
+          people={people}
+          businesses={businesses}
+        />
+
+        <TablePagination
+          page={openPagination.page}
+          totalPages={openPagination.totalPages}
+          paramKey="openPage"
         />
       </section>
 
       <section className="space-y-2">
         <TasksTable
-          tasks={completedTasks}
-          tableTitle="Completed"
-          people={people ?? []}
-          businesses={businesses ?? []}
+          tasks={completedTasks ?? []}
+          tableTitle="Completed Tasks"
+          people={people}
+          businesses={businesses}
+        />
+
+        <TablePagination
+          page={completedPagination.page}
+          totalPages={completedPagination.totalPages}
+          paramKey="completedPage"
         />
       </section>
     </div>

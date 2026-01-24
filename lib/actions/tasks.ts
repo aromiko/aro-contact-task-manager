@@ -77,3 +77,15 @@ export async function createTask(payload: {
 
   revalidatePath("/tasks");
 }
+
+export async function deleteTask(taskId: string) {
+  const supabase = await createSupabaseServerActionClient();
+
+  await supabase.from("task_assignments").delete().eq("task_id", taskId);
+
+  const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/tasks");
+}

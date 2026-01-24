@@ -98,7 +98,7 @@ export default function AddTaskDialog({ people, businesses }: Props) {
 
           {type === "business" && (
             <Select onValueChange={setSelectedId}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select business" />
               </SelectTrigger>
               <SelectContent>

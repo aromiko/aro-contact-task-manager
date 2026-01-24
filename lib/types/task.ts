@@ -29,3 +29,5 @@ export type Task = {
   created_at: string;
   task_assignments?: TaskAssignment | TaskAssignment[];
 };
+
+export type TaskAction = "complete" | "reopen" | "delete";

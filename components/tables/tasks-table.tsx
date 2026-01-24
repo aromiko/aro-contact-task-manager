@@ -10,11 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Task } from "@/lib/types/task";
-import { normalizeRef } from "@/lib/utils";
+import { Task, TaskAction } from "@/lib/types/task";
+import { normalizeRef } from "@/lib/utils/normalize-ref";
+import { Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 
-import { completeTask, reopenTask } from "../../lib/actions/tasks";
+import { completeTask, deleteTask, reopenTask } from "../../lib/actions/tasks";
 import AddTaskDialog from "../dialogs/add-task-dialog";
 import AssignTaskDialog from "../dialogs/assign-task-dialog";
 
@@ -45,25 +46,38 @@ const TasksTable = ({
   businesses,
 }: TasksTableProps) => {
   const [isPending, startTransition] = useTransition();
-  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
-  const isCompleting = (taskId: string) =>
-    isPending && completingTaskId === taskId;
+  const [pendingTask, setPendingTask] = useState<{
+    id: string;
+    action: TaskAction;
+  } | null>(null);
+
+  const isTaskLocked = (taskId: string) =>
+    isPending && pendingTask?.id === taskId;
 
   const handleCompleteTask = (taskId: string) => {
-    setCompletingTaskId(taskId);
+    setPendingTask({ id: taskId, action: "complete" });
 
     startTransition(async () => {
       await completeTask(taskId);
-      setCompletingTaskId(null);
+      setPendingTask(null);
     });
   };
 
   const handleReopenTask = (taskId: string) => {
-    setCompletingTaskId(taskId);
+    setPendingTask({ id: taskId, action: "reopen" });
 
     startTransition(async () => {
       await reopenTask(taskId);
-      setCompletingTaskId(null);
+      setPendingTask(null);
+    });
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setPendingTask({ id: taskId, action: "delete" });
+
+    startTransition(async () => {
+      await deleteTask(taskId);
+      setPendingTask(null);
     });
   };
 
@@ -130,16 +144,28 @@ const TasksTable = ({
                       <>
                         <Button
                           size="sm"
-                          disabled={isCompleting(task.id)}
+                          disabled={isTaskLocked(task.id)}
                           onClick={() => handleCompleteTask(task.id)}
                         >
-                          {isCompleting(task.id) ? "Completing…" : "Complete"}
+                          {pendingTask?.id === task.id &&
+                          pendingTask.action === "complete"
+                            ? "Completing…"
+                            : "Complete"}
                         </Button>
                         <AssignTaskDialog
                           taskId={task.id}
                           people={people}
                           businesses={businesses}
                         />
+                        <Button
+                          size="icon"
+                          variant="destructive"
+                          disabled={isTaskLocked(task.id)}
+                          className="rounded-full"
+                          onClick={() => handleDeleteTask(task.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-white" />
+                        </Button>
                       </>
                     )}
 
@@ -147,10 +173,13 @@ const TasksTable = ({
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={isCompleting(task.id)}
+                        disabled={isTaskLocked(task.id)}
                         onClick={() => handleReopenTask(task.id)}
                       >
-                        {isCompleting(task.id) ? "Reopening…" : "Reopen"}
+                        {pendingTask?.id === task.id &&
+                        pendingTask.action === "reopen"
+                          ? "Reopening…"
+                          : "Reopen"}
                       </Button>
                     )}
                   </TableCell>
