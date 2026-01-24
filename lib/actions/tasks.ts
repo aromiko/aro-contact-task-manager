@@ -16,7 +16,6 @@ export async function completeTask(taskId: string) {
     throw new Error(error.message);
   }
 
-  // Revalidate tasks page
   revalidatePath("/tasks");
 }
 
@@ -38,7 +37,6 @@ export async function reopenTask(taskId: string) {
 export async function assignTask(taskId: string, payload: TaskAssignPayload) {
   const supabase = await createSupabaseServerActionClient();
 
-  // Ensure single assignment per task
   await supabase.from("task_assignments").delete().eq("task_id", taskId);
 
   const { error } = await supabase.from("task_assignments").insert({
@@ -48,6 +46,34 @@ export async function assignTask(taskId: string, payload: TaskAssignPayload) {
   });
 
   if (error) throw new Error(error.message);
+
+  revalidatePath("/tasks");
+}
+
+export async function createTask(payload: {
+  title: string;
+  personId?: string;
+  businessId?: string;
+}) {
+  const supabase = await createSupabaseServerActionClient();
+
+  const { data: task, error } = await supabase
+    .from("tasks")
+    .insert({ title: payload.title })
+    .select("id")
+    .single();
+
+  if (error || !task) {
+    throw new Error(error?.message ?? "Failed to create task");
+  }
+
+  if (payload.personId || payload.businessId) {
+    await supabase.from("task_assignments").insert({
+      task_id: task.id,
+      person_id: payload.personId ?? null,
+      business_id: payload.businessId ?? null,
+    });
+  }
 
   revalidatePath("/tasks");
 }

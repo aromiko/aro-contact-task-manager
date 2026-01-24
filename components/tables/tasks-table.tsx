@@ -15,6 +15,7 @@ import { normalizeRef } from "@/lib/utils";
 import { useState, useTransition } from "react";
 
 import { completeTask, reopenTask } from "../../lib/actions/tasks";
+import AddTaskDialog from "../dialogs/add-task-dialog";
 import AssignTaskDialog from "../dialogs/assign-task-dialog";
 
 function getAssignment(task: Task) {
@@ -69,6 +70,7 @@ const TasksTable = ({
   return (
     <>
       {tableTitle && <h2 className="text-lg font-semibold">{tableTitle}</h2>}
+      <AddTaskDialog people={people ?? []} businesses={businesses ?? []} />
       <div className="w-full overflow-x-auto">
         <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
           <TableHeader>
