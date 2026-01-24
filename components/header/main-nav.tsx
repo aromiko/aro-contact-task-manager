@@ -1,7 +1,7 @@
 import { User } from "@supabase/supabase-js";
 
 type MainNavProps = {
-  user: User;
+  user: User | null;
 };
 
 const MainNav = ({ user }: MainNavProps) => {
