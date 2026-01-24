@@ -1,4 +1,5 @@
 import "@/app/assets/styles/globals.css";
+import MainNav from "@/components/header/main-nav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -33,20 +34,8 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header className="flex items-center justify-between border-b px-6 py-3">
-          <h1 className="font-semibold">Task Manager</h1>
-
-          <div className="flex items-center gap-4">
-            <span className="text-sm">
-              {user?.user_metadata?.name ?? user?.email}
-            </span>
-
-            <form action="/auth/logout" method="post">
-              <button className="text-sm underline">Logout</button>
-            </form>
-          </div>
-        </header>
-        {children}
+        <MainNav user={user} />
+        <main className="container mx-auto">{children}</main>
       </body>
     </html>
   );
