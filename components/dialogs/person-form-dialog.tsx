@@ -141,6 +141,7 @@ const PersonFormDialog = ({
             <Label>Tags</Label>
 
             <MultiSelect
+              defaultValue={person?.tagIds ?? []}
               options={tagOptions}
               value={selectedTags}
               onValueChange={setSelectedTags}
