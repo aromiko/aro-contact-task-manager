@@ -67,7 +67,7 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
       </Link>
 
       <div className="mt-6">
-        <TasksTable tasks={tasks ?? []} showPersonOnly />
+        <TasksTable tasks={tasks ?? []} showPersonOnly hideAssignedTo />
       </div>
 
       <TablePagination
