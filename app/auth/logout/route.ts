@@ -7,5 +7,6 @@ export const POST = async (request: NextRequest) => {
   await supabase.auth.signOut();
 
   const loginUrl = new URL("/login", request.url);
-  return NextResponse.redirect(loginUrl);
+
+  return NextResponse.redirect(loginUrl, { status: 303 });
 };
