@@ -1,6 +1,7 @@
+import DeleteEntityButton from "@/components/buttons/delete-entity-button";
 import TagFormDialog from "@/components/dialogs/tag-form-dialog";
-import DeleteTagButton from "@/components/tags/delete-tag-button";
 import { Button } from "@/components/ui/button";
+import { deleteTag } from "@/lib/actions/tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const TagsPage = async () => {
@@ -39,7 +40,12 @@ const TagsPage = async () => {
                 tag={tag}
               />
 
-              <DeleteTagButton tagId={tag.id} />
+              <DeleteEntityButton
+                id={tag.id}
+                onDelete={deleteTag}
+                title="Delete tag?"
+                description="This tag will be permanently removed."
+              />
             </div>
           </div>
         ))}
