@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Contact & Task Manager
 
-## Getting Started
+A modern contact and task management application built with Next.js 15, Supabase, and Tailwind CSS.  
+Designed with clean architecture, scalable data patterns, and a responsive user experience in mind.
 
-First, run the development server:
+🔗 **Live Site:**  
+https://aro-contact-task-manager.vercel.app/
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Demo Access
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can explore the app using the demo account below if you prefer not to sign up.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Email:** demo@miko-aro.com  
+**Password:** Demo1234
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Task Management
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Create, update, and delete tasks
+- Separate views for open and completed tasks
+- Server-side pagination
+- Tag-based organization
+- Clean table UI using shadcn components
 
-## Deploy on Vercel
+### People Management
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Full CRUD for contacts
+- Assign contacts to businesses
+- Tag people for flexible grouping
+- Scalable pagination-ready architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Business Management
+
+- Create and manage businesses
+- Assign tags and categories
+- Link businesses to people
+- Clean edit and create flows with reusable dialogs
+
+### Tags & Categories
+
+- Centralized tag and category management
+- Reusable across tasks, people, and businesses
+- Designed for future expansion
+
+### Authentication
+
+- Secure authentication powered by Supabase
+- Protected routes
+- Demo account support
+
+### UI & UX
+
+- shadcn/ui components
+- Accessible dialogs and sheets
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Database:** PostgreSQL (via Supabase)
+- **Authentication:** JWT-based authentication via Supabase Auth
+- **UI Components:** shadcn/ui
+- **Styling:** Tailwind CSS v4
+- **State & Data:** Server Actions + Supabase queries
+- **Deployment:** Vercel
+
+---
+
+## Architecture Highlights
+
+- App Router-first design
+- Server Actions isolated in `lib/actions`
+- Read queries isolated in `lib/queries`
+- Clean page orchestration
+- Reusable form dialogs for create and edit flows
+- Pagination-ready queries across features
+- No client-side data fetching for core CRUD operations
+
+This architecture keeps the codebase predictable, testable, and easy to extend.
