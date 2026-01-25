@@ -2,7 +2,7 @@ import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
-import { getPeopleAndBusinesses } from "@/lib/queries/lookups";
+import { getBusinessesLookup, getPeopleLookup } from "@/lib/queries/lookups";
 import {
   getCompletedTasks,
   getOpenTasks,
@@ -45,11 +45,13 @@ const TasksPage = async (props: TasksPageProps) => {
   const [
     { data: openTasks, error: openError },
     { data: completedTasks, error: completedError },
-    { people, businesses },
+    people,
+    businesses,
   ] = await Promise.all([
     getOpenTasks(supabase, openPagination),
     getCompletedTasks(supabase, completedPagination),
-    getPeopleAndBusinesses(supabase),
+    getPeopleLookup(supabase),
+    getBusinessesLookup(supabase),
   ]);
 
   if (openError) return <pre>{openError.message}</pre>;
@@ -58,7 +60,7 @@ const TasksPage = async (props: TasksPageProps) => {
   return (
     <div className="container mx-auto space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">TASK LIST</h1>
+        <h1 className="text-4xl font-bold">Tasks List</h1>
 
         <AddTaskDialog
           people={people ?? []}

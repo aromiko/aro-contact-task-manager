@@ -1,27 +1,28 @@
-import PersonFormDialog from "@/components/dialogs/person-form-dialog";
+import BusinessFormDialog from "@/components/dialogs/business-form-dialog";
 import TablePagination from "@/components/pagination/pagination";
-import PeopleTable from "@/components/tables/people-table";
+import BusinessesTable from "@/components/tables/businesses-table";
 import { Button } from "@/components/ui/button";
-import { getBusinessesLookup, getTagsLookup } from "@/lib/queries/lookups";
-import { getPeople, getPeopleCount } from "@/lib/queries/people";
+import { getBusinessCount, getBusinesses } from "@/lib/queries/businesses";
+import { getCategories } from "@/lib/queries/categories";
+import { getTags } from "@/lib/queries/tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
 
-type PeoplePageProps = {
-  searchParams: {
+type BusinessesPageProps = {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 };
 
 const PAGE_SIZE = 10;
 
-const PeoplePage = async (props: PeoplePageProps) => {
+const BusinessesPage = async (props: BusinessesPageProps) => {
   const searchParams = await props.searchParams;
   const rawPage = Math.max(1, Number(searchParams.page) || 1);
 
   const supabase = await createSupabaseServerClient();
 
-  const totalCount = await getPeopleCount(supabase);
+  const totalCount = await getBusinessCount(supabase);
 
   const pagination = getPagination({
     rawPage,
@@ -29,10 +30,10 @@ const PeoplePage = async (props: PeoplePageProps) => {
     pageSize: PAGE_SIZE,
   });
 
-  const [{ data: people, error }, businesses, tags] = await Promise.all([
-    getPeople(supabase, pagination),
-    getBusinessesLookup(supabase),
-    getTagsLookup(supabase),
+  const [{ data: businesses, error }, categories, tags] = await Promise.all([
+    getBusinesses(supabase, pagination),
+    getCategories(supabase),
+    getTags(supabase),
   ]);
 
   if (error) return <pre>{error.message}</pre>;
@@ -40,20 +41,20 @@ const PeoplePage = async (props: PeoplePageProps) => {
   return (
     <div className="container mx-auto space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">People</h1>
+        <h1 className="text-4xl font-bold">Businesses</h1>
 
-        <PersonFormDialog
-          trigger={<Button>Add person</Button>}
-          businesses={businesses}
+        <BusinessFormDialog
           tags={tags}
+          categories={categories}
+          trigger={<Button>Add business</Button>}
         />
       </div>
 
       <section className="space-y-2">
-        <PeopleTable
-          people={people ?? []}
-          businesses={businesses}
+        <BusinessesTable
+          businesses={businesses ?? []}
           tags={tags}
+          categories={categories}
         />
 
         <TablePagination
@@ -66,4 +67,4 @@ const PeoplePage = async (props: PeoplePageProps) => {
   );
 };
 
-export default PeoplePage;
+export default BusinessesPage;

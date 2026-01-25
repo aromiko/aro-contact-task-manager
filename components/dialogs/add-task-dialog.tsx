@@ -26,6 +26,7 @@ type AddTaskDialogProps = {
   people?: Option[];
   businesses?: Option[];
   personId?: string;
+  businessId?: string;
 };
 
 const AddTaskDialog = ({
@@ -33,6 +34,7 @@ const AddTaskDialog = ({
   people,
   businesses,
   personId,
+  businessId,
 }: AddTaskDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -40,6 +42,7 @@ const AddTaskDialog = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const isPersonScoped = Boolean(personId);
+  const isBusinessScoped = Boolean(businessId);
 
   const handleCreate = () => {
     if (!title.trim()) return;
@@ -49,11 +52,12 @@ const AddTaskDialog = ({
         title,
         personId: isPersonScoped
           ? personId
-          : type === "person"
+          : !isBusinessScoped && type === "person"
             ? (selectedId ?? undefined)
             : undefined,
-        businessId:
-          !isPersonScoped && type === "business"
+        businessId: isBusinessScoped
+          ? businessId
+          : !isPersonScoped && type === "business"
             ? (selectedId ?? undefined)
             : undefined,
       });
@@ -84,7 +88,7 @@ const AddTaskDialog = ({
             disabled={isPending}
           />
 
-          {!isPersonScoped && (
+          {!isPersonScoped && !isBusinessScoped && (
             <Select
               onValueChange={(v) => {
                 setType(v as "person" | "business" | null);
@@ -101,7 +105,7 @@ const AddTaskDialog = ({
             </Select>
           )}
 
-          {!isPersonScoped && type === "person" && (
+          {!isPersonScoped && !isBusinessScoped && type === "person" && (
             <Select onValueChange={setSelectedId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select person" />
@@ -116,7 +120,7 @@ const AddTaskDialog = ({
             </Select>
           )}
 
-          {!isPersonScoped && type === "business" && (
+          {!isPersonScoped && !isBusinessScoped && type === "business" && (
             <Select onValueChange={setSelectedId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select business" />

@@ -61,10 +61,8 @@ export const deletePerson = async (personId: string) => {
 export const updatePersonTags = async (personId: string, tagIds: string[]) => {
   const supabase = await createSupabaseServerClient();
 
-  // remove existing tags
   await supabase.from("person_tags").delete().eq("person_id", personId);
 
-  // insert new tags
   if (tagIds.length > 0) {
     const rows = tagIds.map((tagId) => ({
       person_id: personId,

@@ -1,26 +1,41 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getPeopleAndBusinesses = async (supabase: SupabaseClient) => {
-  const [{ data: people }, { data: businesses }] = await Promise.all([
-    supabase.from("people").select("id, name").order("name"),
-    supabase.from("businesses").select("id, name").order("name"),
-  ]);
+export const getPeopleLookup = async (supabase: SupabaseClient) => {
+  const { data, error } = await supabase
+    .from("people")
+    .select("id, name")
+    .order("name");
 
-  return {
-    people: people ?? [],
-    businesses: businesses ?? [],
-  };
+  if (error) throw error;
+  return data ?? [];
 };
 
-export const getPeopleFormLookups = async (supabase: SupabaseClient) => {
-  const [{ data: businesses }, { data: tags }] = await Promise.all([
-    supabase.from("businesses").select("id, name").order("name"),
+export const getBusinessesLookup = async (supabase: SupabaseClient) => {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id, name")
+    .order("name");
 
-    supabase.from("tags").select("id, name").order("name"),
-  ]);
+  if (error) throw error;
+  return data ?? [];
+};
 
-  return {
-    businesses: businesses ?? [],
-    tags: tags ?? [],
-  };
+export const getTagsLookup = async (supabase: SupabaseClient) => {
+  const { data, error } = await supabase
+    .from("tags")
+    .select("id, name")
+    .order("name");
+
+  if (error) throw error;
+  return data ?? [];
+};
+
+export const getCategoriesLookup = async (supabase: SupabaseClient) => {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, name")
+    .order("name");
+
+  if (error) throw error;
+  return data ?? [];
 };

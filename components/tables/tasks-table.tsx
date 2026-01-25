@@ -39,6 +39,7 @@ type TasksTableProps = {
   people?: Option[];
   businesses?: Option[];
   hideAssignedTo?: boolean;
+  showPersonOnly?: boolean;
 };
 
 const TasksTable = ({
@@ -47,6 +48,7 @@ const TasksTable = ({
   people,
   businesses,
   hideAssignedTo = false,
+  showPersonOnly = false,
 }: TasksTableProps) => {
   const [isPending, startTransition] = useTransition();
   const [pendingTask, setPendingTask] = useState<{
@@ -134,7 +136,18 @@ const TasksTable = ({
 
                   {!hideAssignedTo && (
                     <TableCell>
-                      {personRef ? (
+                      {showPersonOnly ? (
+                        personRef ? (
+                          <Link
+                            href={`/people/${personRef.id}`}
+                            className="font-medium text-blue-800 hover:underline"
+                          >
+                            {personRef.name}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )
+                      ) : personRef ? (
                         <Link
                           href={`/people/${personRef.id}`}
                           className="font-medium text-blue-800 hover:underline"
@@ -187,9 +200,8 @@ const TasksTable = ({
                               size="icon"
                               variant="destructive"
                               disabled={isTaskLocked(task.id)}
-                              className="rounded-full"
                             >
-                              <Trash2 className="h-4 w-4 text-white" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           }
                         />

@@ -104,3 +104,44 @@ export const getTasksByPerson = async (
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 };
+
+export const getTaskCountByBusiness = async (
+  supabase: SupabaseClient,
+  businessId: string,
+) => {
+  const { count, error } = await supabase
+    .from("task_assignments")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId);
+
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+
+  return count ?? 0;
+};
+
+export const getTasksByBusiness = async (
+  supabase: SupabaseClient,
+  businessId: string,
+  range: { from: number; to: number },
+) => {
+  return supabase
+    .from("tasks")
+    .select(
+      `
+      id,
+      title,
+      status,
+      created_at,
+      task_assignments!inner (
+        person:people!inner ( id, name, business_id ),
+        business:businesses ( id, name )
+      )
+    `,
+    )
+    .eq("task_assignments.person.business_id", businessId)
+    .order("created_at", { ascending: false })
+    .range(range.from, range.to);
+};
