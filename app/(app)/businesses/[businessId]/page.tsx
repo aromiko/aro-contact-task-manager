@@ -2,27 +2,30 @@ import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
-import { getTaskCountByPerson, getTasksByPerson } from "@/lib/queries/tasks";
+import {
+  getTaskCountByBusiness,
+  getTasksByBusiness,
+} from "@/lib/queries/tasks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
 import Link from "next/link";
 
-type PersonTasksPageProps = {
-  params: Promise<{ personId: string }>;
+type BusinessTasksPageProps = {
+  params: Promise<{ businessId: string }>;
   searchParams: Promise<{ page?: string }>;
 };
 
 const PAGE_SIZE = 10;
 
-const PersonTasksPage = async (props: PersonTasksPageProps) => {
-  const { personId } = await props.params;
+const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
+  const { businessId } = await props.params;
   const searchParams = await props.searchParams;
 
   const rawPage = Math.max(1, Number(searchParams.page) || 1);
 
   const supabase = await createSupabaseServerClient();
 
-  const totalCount = await getTaskCountByPerson(supabase, personId);
+  const totalCount = await getTaskCountByBusiness(supabase, businessId);
 
   const pagination = getPagination({
     rawPage,
@@ -30,40 +33,41 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
     pageSize: PAGE_SIZE,
   });
 
-  const { data: tasks, error } = await getTasksByPerson(
+  const { data: tasks, error } = await getTasksByBusiness(
     supabase,
-    personId,
+    businessId,
     pagination,
   );
 
-  const { data: person } = await supabase
-    .from("people")
+  const { data: business } = await supabase
+    .from("businesses")
     .select("name")
-    .eq("id", personId)
-    .single();
+    .eq("id", businessId)
+    .maybeSingle();
 
   if (error) return <pre>{error.message}</pre>;
+  if (!business) return <p>Business not found</p>;
 
   return (
     <div className="container mx-auto space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{person?.name}</h1>
+        <h1 className="text-3xl font-bold">Tasks for {business.name}</h1>
 
         <AddTaskDialog
           trigger={<Button>Add task</Button>}
-          personId={personId}
+          businesses={[{ id: businessId, name: business.name }]}
         />
       </div>
 
       <Link
-        href="/people"
+        href="/businesses"
         className="font-medium text-blue-800 hover:underline"
       >
-        ← Back to people
+        ← Back to businesses
       </Link>
 
       <div className="mt-6">
-        <TasksTable tasks={tasks ?? []} hideAssignedTo />
+        <TasksTable tasks={tasks ?? []} showPersonOnly />
       </div>
 
       <TablePagination
@@ -75,4 +79,4 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
   );
 };
 
-export default PersonTasksPage;
+export default BusinessTasksPage;
