@@ -8,15 +8,10 @@ export type BusinessRef = {
   name: string;
 };
 
-export type TaskAssignment =
-  | {
-      person: PersonRef | null;
-      business: BusinessRef | null;
-    }
-  | {
-      person: PersonRef[] | null;
-      business: BusinessRef[] | null;
-    };
+export type TaskAssignment = {
+  person?: PersonRef[] | null;
+  business?: BusinessRef[] | null;
+};
 
 export type TaskAssignPayload =
   | { personId: string; businessId?: never }

@@ -136,12 +136,14 @@ export const getTasksByBusiness = async (
       status,
       created_at,
       task_assignments!inner (
-        person:people!inner ( id, name, business_id ),
-        business:businesses ( id, name )
+        business:businesses (
+          id,
+          name
+        )
       )
-    `,
+      `,
     )
-    .eq("task_assignments.person.business_id", businessId)
+    .eq("task_assignments.business_id", businessId)
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 };

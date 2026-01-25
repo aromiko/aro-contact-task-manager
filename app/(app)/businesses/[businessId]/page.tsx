@@ -55,7 +55,7 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
 
         <AddTaskDialog
           trigger={<Button>Add task</Button>}
-          businesses={[{ id: businessId, name: business.name }]}
+          businessId={businessId}
         />
       </div>
 
