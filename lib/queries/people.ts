@@ -47,7 +47,9 @@ export const getPeople = async (
   const normalized =
     data?.map((p) => ({
       ...p,
-      business: p.business?.[0] ?? null,
+      business: Array.isArray(p.business)
+        ? (p.business[0] ?? null)
+        : (p.business ?? null),
       tags:
         p.person_tags?.flatMap((pt) =>
           Array.isArray(pt.tag) ? pt.tag : [pt.tag],

@@ -18,9 +18,11 @@ import { Badge } from "../ui/badge";
 
 type PeopleTableProps = {
   people: Person[];
+  businesses: { id: string; name: string }[];
+  tags: { id: string; name: string }[];
 };
 
-const PeopleTable = ({ people }: PeopleTableProps) => {
+const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
   return (
     <div className="rounded-md border">
       <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
@@ -96,8 +98,11 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
                     name: person.name,
                     email: person.email,
                     phone: person.phone,
-                    business_id: null,
+                    business_id: person.business?.id ?? null,
+                    tagIds: person.tags.map((t) => t.id),
                   }}
+                  businesses={businesses}
+                  tags={tags}
                   trigger={
                     <Button size="sm" variant="outline">
                       Edit
