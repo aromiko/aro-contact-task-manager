@@ -17,10 +17,6 @@ export type TaskAssignPayload =
   | { personId: string; businessId?: never }
   | { businessId: string; personId?: never };
 
-export type TaskAssignPayload =
-  | { personId: string; businessId?: never }
-  | { businessId: string; personId?: never };
-
 export type Task = {
   id: string;
   title: string;
