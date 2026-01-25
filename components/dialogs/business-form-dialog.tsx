@@ -17,7 +17,7 @@ import {
   updateBusinessCategories,
   updateBusinessTags,
 } from "@/lib/actions/businesses";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 type Option = {
   id: string;
@@ -76,6 +76,14 @@ const BusinessFormDialog = ({
     value: cat.id,
   }));
 
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    business?.tagIds ?? [],
+  );
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    business?.categoryIds ?? [],
+  );
+
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -99,28 +107,34 @@ const BusinessFormDialog = ({
             <Label>Categories</Label>
 
             <MultiSelect
-              key={business?.id ?? "new-categories"}
-              name="category_ids"
               options={categoryOptions}
+              value={selectedCategories}
+              onValueChange={setSelectedCategories}
               defaultValue={business?.categoryIds ?? []}
               placeholder="Select categories"
               emptyIndicator="No categories found"
-              onValueChange={() => {}}
             />
+
+            {selectedCategories.map((id) => (
+              <input key={id} type="hidden" name="category_ids" value={id} />
+            ))}
           </div>
 
           <div className="space-y-2">
             <Label>Tags</Label>
 
             <MultiSelect
-              key={business?.id ?? "new-tags"}
-              name="tag_ids"
               options={tagOptions}
+              value={selectedTags}
+              onValueChange={setSelectedTags}
               defaultValue={business?.tagIds ?? []}
               placeholder="Select tags"
               emptyIndicator="No tags found"
-              onValueChange={() => {}}
             />
+
+            {selectedTags.map((id) => (
+              <input key={id} type="hidden" name="tag_ids" value={id} />
+            ))}
           </div>
 
           <div className="flex justify-end">
