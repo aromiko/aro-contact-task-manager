@@ -1,9 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
+
+  if (req.method !== "GET") {
+    return res;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,13 +14,10 @@ export async function middleware(req: NextRequest) {
     {
       cookies: {
         getAll() {
-          return req.cookies.getAll().map((cookie) => ({
-            name: cookie.name,
-            value: cookie.value,
-          }));
+          return req.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) => {
             res.cookies.set(name, value, options);
           });
         },
@@ -29,11 +29,17 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
+  const pathname = req.nextUrl.pathname;
+
   if (
-    !session &&
-    !req.nextUrl.pathname.startsWith("/login") &&
-    !req.nextUrl.pathname.startsWith("/signup")
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/auth")
   ) {
+    return res;
+  }
+
+  if (!session) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
