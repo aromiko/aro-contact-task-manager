@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,8 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { deletePerson } from "@/lib/actions/people";
 import { Person } from "@/lib/types/people";
+import { Trash2 } from "lucide-react";
 
+import PersonFormDialog from "../dialogs/person-form-dialog";
 import { Badge } from "../ui/badge";
 
 type PeopleTableProps = {
@@ -28,6 +32,7 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
             <TableHead className="text-white">Business</TableHead>
             <TableHead className="text-white">Tags</TableHead>
             <TableHead className="text-right text-white">Created</TableHead>
+            <TableHead className="text-right text-white">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -35,7 +40,7 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
           {people.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={7}
                 className="text-muted-foreground text-center"
               >
                 No people
@@ -83,6 +88,30 @@ const PeopleTable = ({ people }: PeopleTableProps) => {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+              </TableCell>
+              <TableCell className="space-x-2 text-right">
+                <PersonFormDialog
+                  person={{
+                    id: person.id,
+                    name: person.name,
+                    email: person.email,
+                    phone: person.phone,
+                    business_id: null,
+                  }}
+                  trigger={
+                    <Button size="sm" variant="outline">
+                      Edit
+                    </Button>
+                  }
+                />
+
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onClick={() => deletePerson(person.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

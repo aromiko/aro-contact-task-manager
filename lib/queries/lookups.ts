@@ -11,3 +11,16 @@ export const getPeopleAndBusinesses = async (supabase: SupabaseClient) => {
     businesses: businesses ?? [],
   };
 };
+
+export const getPeopleFormLookups = async (supabase: SupabaseClient) => {
+  const [{ data: businesses }, { data: tags }] = await Promise.all([
+    supabase.from("businesses").select("id, name").order("name"),
+
+    supabase.from("tags").select("id, name").order("name"),
+  ]);
+
+  return {
+    businesses: businesses ?? [],
+    tags: tags ?? [],
+  };
+};
