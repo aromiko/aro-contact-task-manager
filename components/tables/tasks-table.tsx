@@ -119,6 +119,7 @@ const TasksTable = ({
   return (
     <>
       {tableTitle && <h2 className="text-lg font-semibold">{tableTitle}</h2>}
+
       <div className="w-full overflow-x-auto">
         <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
           <TableHeader>
