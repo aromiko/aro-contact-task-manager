@@ -1,6 +1,6 @@
 # Contact & Task Manager
 
-A modern contact and task management application built with Next.js 15, Supabase, and Tailwind CSS.  
+A modern contact and task management application built with Next.js 16, Supabase, and Tailwind CSS.  
 Designed with clean architecture, scalable data patterns, and a responsive user experience in mind.
 
 🔗 **Live Site:**  
