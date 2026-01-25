@@ -4,11 +4,11 @@ type PaginationInput = {
   pageSize: number;
 };
 
-export function getPagination({
+export const getPagination = ({
   rawPage,
   totalCount,
   pageSize,
-}: PaginationInput) {
+}: PaginationInput) => {
   const totalPages = totalCount ? Math.ceil(totalCount / pageSize) : 1;
 
   const page = Math.min(Math.max(rawPage, 1), totalPages);
@@ -22,4 +22,4 @@ export function getPagination({
     from,
     to,
   };
-}
+};

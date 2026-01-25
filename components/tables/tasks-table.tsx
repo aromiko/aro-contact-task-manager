@@ -13,13 +13,14 @@ import {
 import { Task, TaskAction } from "@/lib/types/task";
 import { normalizeRef } from "@/lib/utils/normalize-ref";
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { completeTask, deleteTask, reopenTask } from "../../lib/actions/tasks";
-import AddTaskDialog from "../dialogs/add-task-dialog";
 import AssignTaskDialog from "../dialogs/assign-task-dialog";
+import ConfirmDeleteDialog from "../dialogs/confirm-delete-dialog";
 
-function getAssignment(task: Task) {
+const getAssignment = (task: Task) => {
   const assignment = Array.isArray(task.task_assignments)
     ? task.task_assignments[0]
     : task.task_assignments;
@@ -28,15 +29,16 @@ function getAssignment(task: Task) {
     person: assignment?.person ?? null,
     business: assignment?.business ?? null,
   };
-}
+};
 
 type Option = { id: string; name: string };
 
 type TasksTableProps = {
   tableTitle?: string;
   tasks: Task[];
-  people: Option[];
-  businesses: Option[];
+  people?: Option[];
+  businesses?: Option[];
+  hideAssignedTo?: boolean;
 };
 
 const TasksTable = ({
@@ -44,6 +46,7 @@ const TasksTable = ({
   tasks,
   people,
   businesses,
+  hideAssignedTo = false,
 }: TasksTableProps) => {
   const [isPending, startTransition] = useTransition();
   const [pendingTask, setPendingTask] = useState<{
@@ -84,14 +87,15 @@ const TasksTable = ({
   return (
     <>
       {tableTitle && <h2 className="text-lg font-semibold">{tableTitle}</h2>}
-      <AddTaskDialog people={people ?? []} businesses={businesses ?? []} />
       <div className="w-full overflow-x-auto">
         <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
           <TableHeader>
             <TableRow className="bg-primary hover:bg-primary/90">
               <TableHead className="text-white">Task</TableHead>
               <TableHead className="text-white">Created</TableHead>
-              <TableHead className="text-white">Assigned To</TableHead>
+              {!hideAssignedTo && (
+                <TableHead className="text-white">Assigned To</TableHead>
+              )}
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-right text-white">Action</TableHead>
             </TableRow>
@@ -113,7 +117,6 @@ const TasksTable = ({
               const { person, business } = getAssignment(task);
               const personRef = normalizeRef(person);
               const businessRef = normalizeRef(business);
-              const assignedName = personRef?.name ?? businessRef?.name ?? "—";
 
               return (
                 <TableRow key={task.id}>
@@ -129,7 +132,22 @@ const TasksTable = ({
                     })}
                   </TableCell>
 
-                  <TableCell>{assignedName}</TableCell>
+                  {!hideAssignedTo && (
+                    <TableCell>
+                      {personRef ? (
+                        <Link
+                          href={`/people/${personRef.id}`}
+                          className="font-medium text-blue-800 hover:underline"
+                        >
+                          {personRef.name}
+                        </Link>
+                      ) : businessRef ? (
+                        <span>{businessRef.name}</span>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                  )}
 
                   <TableCell>
                     {task.status === "open" ? (
@@ -152,20 +170,29 @@ const TasksTable = ({
                             ? "Completing…"
                             : "Complete"}
                         </Button>
-                        <AssignTaskDialog
-                          taskId={task.id}
-                          people={people}
-                          businesses={businesses}
+                        {people && businesses && (
+                          <AssignTaskDialog
+                            taskId={task.id}
+                            people={people}
+                            businesses={businesses}
+                          />
+                        )}
+
+                        <ConfirmDeleteDialog
+                          title="Delete task?"
+                          description="This task will be permanently removed."
+                          onConfirm={() => handleDeleteTask(task.id)}
+                          trigger={
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              disabled={isTaskLocked(task.id)}
+                              className="rounded-full"
+                            >
+                              <Trash2 className="h-4 w-4 text-white" />
+                            </Button>
+                          }
                         />
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          disabled={isTaskLocked(task.id)}
-                          className="rounded-full"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-white" />
-                        </Button>
                       </>
                     )}
 

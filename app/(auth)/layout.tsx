@@ -1,10 +1,16 @@
 import "@/app/assets/styles/globals.css";
+import { Metadata } from "next";
 
-export default function AuthLayout({
+export const metadata: Metadata = {
+  title: "Task and Contact Manager",
+  description: "Manage your tasks and contacts efficiently.",
+};
+
+const AuthLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html lang="en">
       <body>
@@ -12,4 +18,6 @@ export default function AuthLayout({
       </body>
     </html>
   );
-}
+};
+
+export default AuthLayout;

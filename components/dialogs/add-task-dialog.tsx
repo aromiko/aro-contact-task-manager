@@ -21,17 +21,25 @@ import { useState, useTransition } from "react";
 
 type Option = { id: string; name: string };
 
-type Props = {
-  people: Option[];
-  businesses: Option[];
+type AddTaskDialogProps = {
+  trigger: React.ReactNode;
+  people?: Option[];
+  businesses?: Option[];
+  personId?: string;
 };
 
-export default function AddTaskDialog({ people, businesses }: Props) {
+const AddTaskDialog = ({
+  trigger,
+  people,
+  businesses,
+  personId,
+}: AddTaskDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"person" | "business" | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const isPersonScoped = Boolean(personId);
 
   const handleCreate = () => {
     if (!title.trim()) return;
@@ -39,8 +47,15 @@ export default function AddTaskDialog({ people, businesses }: Props) {
     startTransition(async () => {
       await createTask({
         title,
-        personId: type === "person" ? (selectedId ?? undefined) : undefined,
-        businessId: type === "business" ? (selectedId ?? undefined) : undefined,
+        personId: isPersonScoped
+          ? personId
+          : type === "person"
+            ? (selectedId ?? undefined)
+            : undefined,
+        businessId:
+          !isPersonScoped && type === "business"
+            ? (selectedId ?? undefined)
+            : undefined,
       });
 
       setTitle("");
@@ -69,25 +84,30 @@ export default function AddTaskDialog({ people, businesses }: Props) {
             disabled={isPending}
           />
 
-          <Select
-            onValueChange={(v) => setType(v as "person" | "business" | null)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Assign to (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="person">Person</SelectItem>
-              <SelectItem value="business">Business</SelectItem>
-            </SelectContent>
-          </Select>
+          {!isPersonScoped && (
+            <Select
+              onValueChange={(v) => {
+                setType(v as "person" | "business" | null);
+                setSelectedId(null);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Assign to (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="person">Person</SelectItem>
+                <SelectItem value="business">Business</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
-          {type === "person" && (
+          {!isPersonScoped && type === "person" && (
             <Select onValueChange={setSelectedId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select person" />
               </SelectTrigger>
               <SelectContent>
-                {people.map((p) => (
+                {people?.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -96,13 +116,13 @@ export default function AddTaskDialog({ people, businesses }: Props) {
             </Select>
           )}
 
-          {type === "business" && (
+          {!isPersonScoped && type === "business" && (
             <Select onValueChange={setSelectedId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select business" />
               </SelectTrigger>
               <SelectContent>
-                {businesses.map((b) => (
+                {businesses?.map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
                   </SelectItem>
@@ -122,4 +142,6 @@ export default function AddTaskDialog({ people, businesses }: Props) {
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default AddTaskDialog;

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useState } from "react";
 
-export default function LoginPage() {
+const LoginPage = () => {
   const supabase = createSupabaseBrowserClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -81,4 +81,6 @@ export default function LoginPage() {
       </Card>
     </section>
   );
-}
+};
+
+export default LoginPage;

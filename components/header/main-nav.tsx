@@ -10,8 +10,8 @@ const MainNav = ({ user }: MainNavProps) => {
       <span className="font-semibold">Task Manager</span>
       <nav className="flex gap-4 text-sm">
         <a href="/tasks">Tasks</a>
-        <a href="/contacts/people">People</a>
-        <a href="/contacts/businesses">Businesses</a>
+        <a href="/people">People</a>
+        <a href="/businesses">Businesses</a>
         <a href="/tags">Tags</a>
         <a href="/categories">Categories</a>
       </nav>
