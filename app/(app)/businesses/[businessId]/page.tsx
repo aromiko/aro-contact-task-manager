@@ -55,7 +55,7 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
 
         <AddTaskDialog
           trigger={<Button>Add task</Button>}
-          businesses={[{ id: businessId, name: business.name }]}
+          businessId={businessId}
         />
       </div>
 
@@ -67,7 +67,7 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
       </Link>
 
       <div className="mt-6">
-        <TasksTable tasks={tasks ?? []} showPersonOnly />
+        <TasksTable tasks={tasks ?? []} showPersonOnly hideAssignedTo />
       </div>
 
       <TablePagination
