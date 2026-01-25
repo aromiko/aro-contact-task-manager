@@ -27,7 +27,7 @@ type PeopleTableProps = {
 const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
   return (
     <div className="rounded-md border">
-      <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
+      <Table className="w-full min-w-300 table-fixed lg:min-w-0">
         <TableHeader>
           <TableRow className="bg-primary hover:bg-primary/90">
             <TableHead className="text-white">Name</TableHead>

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Task and Contact Manager",
+  title: "Aro | Task and Contact Manager",
   description: "Manage your tasks and contacts efficiently.",
 };
 
