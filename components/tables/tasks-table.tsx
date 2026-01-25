@@ -121,121 +121,125 @@ const TasksTable = ({
       {tableTitle && <h2 className="text-lg font-semibold">{tableTitle}</h2>}
 
       <div className="w-full overflow-x-auto">
-        <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
-          <TableHeader>
-            <TableRow className="bg-primary hover:bg-primary/90">
-              <TableHead className="text-white">Task</TableHead>
-              <TableHead className="text-white">Created</TableHead>
-              {!hideAssignedTo && (
-                <TableHead className="text-white">Assigned To</TableHead>
-              )}
-              <TableHead className="text-white">Status</TableHead>
-              <TableHead className="text-right text-white">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {tasks.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={hideAssignedTo ? 4 : 5}
-                  className="text-muted-foreground text-center"
-                >
-                  No tasks
-                </TableCell>
-              </TableRow>
-            )}
-
-            {tasks.map((task) => (
-              <TableRow key={task.id}>
-                <TableCell className="font-medium">{task.title}</TableCell>
-
-                <TableCell className="text-muted-foreground">
-                  {new Date(task.created_at).toLocaleString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </TableCell>
-
+        <div className="rounded-md border">
+          <Table className="w-full min-w-5xl table-fixed lg:min-w-0">
+            <TableHeader>
+              <TableRow className="bg-primary hover:bg-primary/90">
+                <TableHead className="text-white">Task</TableHead>
+                <TableHead className="text-white">Created</TableHead>
                 {!hideAssignedTo && (
-                  <TableCell>
-                    <AssignedToCell
-                      task={task}
-                      showPersonOnly={showPersonOnly}
-                    />
-                  </TableCell>
+                  <TableHead className="text-white">Assigned To</TableHead>
                 )}
+                <TableHead className="text-white">Status</TableHead>
+                <TableHead className="text-right text-white">Action</TableHead>
+              </TableRow>
+            </TableHeader>
 
-                <TableCell>
-                  {task.status === "open" ? (
-                    <Badge variant="secondary">Open</Badge>
-                  ) : (
-                    <Badge className="bg-green-800">Completed</Badge>
+            <TableBody>
+              {tasks.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={hideAssignedTo ? 4 : 5}
+                    className="text-muted-foreground text-center"
+                  >
+                    No tasks
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {tasks.map((task) => (
+                <TableRow key={task.id}>
+                  <TableCell className="font-medium">{task.title}</TableCell>
+
+                  <TableCell className="text-muted-foreground">
+                    {new Date(task.created_at).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </TableCell>
+
+                  {!hideAssignedTo && (
+                    <TableCell>
+                      <AssignedToCell
+                        task={task}
+                        showPersonOnly={showPersonOnly}
+                      />
+                    </TableCell>
                   )}
-                </TableCell>
 
-                <TableCell className="space-x-2 text-right">
-                  {task.status === "open" ? (
-                    <>
+                  <TableCell>
+                    {task.status === "open" ? (
+                      <Badge variant="secondary">Open</Badge>
+                    ) : (
+                      <Badge className="bg-green-800">Completed</Badge>
+                    )}
+                  </TableCell>
+
+                  <TableCell className="space-x-2 text-right">
+                    {task.status === "open" ? (
+                      <>
+                        <Button
+                          size="sm"
+                          disabled={isLocked(task.id)}
+                          onClick={() =>
+                            runAction(task.id, "complete", () =>
+                              completeTask(task.id),
+                            )
+                          }
+                        >
+                          Complete
+                        </Button>
+
+                        {people && businesses && (
+                          <AssignTaskDialog
+                            taskId={task.id}
+                            people={people}
+                            businesses={businesses}
+                          />
+                        )}
+
+                        <ConfirmDeleteDialog
+                          title="Delete task?"
+                          description="This task will be permanently removed."
+                          onConfirm={() =>
+                            runAction(task.id, "delete", () =>
+                              deleteTask(task.id),
+                            )
+                          }
+                          trigger={
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              disabled={isLocked(task.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                      </>
+                    ) : (
                       <Button
                         size="sm"
+                        variant="outline"
                         disabled={isLocked(task.id)}
                         onClick={() =>
-                          runAction(task.id, "complete", () =>
-                            completeTask(task.id),
+                          runAction(task.id, "reopen", () =>
+                            reopenTask(task.id),
                           )
                         }
                       >
-                        Complete
+                        Reopen
                       </Button>
-
-                      {people && businesses && (
-                        <AssignTaskDialog
-                          taskId={task.id}
-                          people={people}
-                          businesses={businesses}
-                        />
-                      )}
-
-                      <ConfirmDeleteDialog
-                        title="Delete task?"
-                        description="This task will be permanently removed."
-                        onConfirm={() =>
-                          runAction(task.id, "delete", () =>
-                            deleteTask(task.id),
-                          )
-                        }
-                        trigger={
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            disabled={isLocked(task.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                    </>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={isLocked(task.id)}
-                      onClick={() =>
-                        runAction(task.id, "reopen", () => reopenTask(task.id))
-                      }
-                    >
-                      Reopen
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </>
   );
