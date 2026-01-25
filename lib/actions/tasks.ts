@@ -53,7 +53,7 @@ export const assignTask = async (
   revalidatePath("/tasks");
 };
 
-export const createTask = async (payload: {
+export const createTask = async (input: {
   title: string;
   personId?: string;
   businessId?: string;
@@ -62,23 +62,27 @@ export const createTask = async (payload: {
 
   const { data: task, error } = await supabase
     .from("tasks")
-    .insert({ title: payload.title })
+    .insert({
+      title: input.title,
+      status: "open",
+    })
     .select("id")
     .single();
 
-  if (error || !task) {
-    throw new Error(error?.message ?? "Failed to create task");
-  }
+  if (error) throw error;
 
-  if (payload.personId || payload.businessId) {
+  if (input.personId || input.businessId) {
     await supabase.from("task_assignments").insert({
       task_id: task.id,
-      person_id: payload.personId ?? null,
-      business_id: payload.businessId ?? null,
+      person_id: input.personId ?? null,
+      business_id: input.businessId ?? null,
     });
   }
 
   revalidatePath("/tasks");
+  revalidatePath(`/people/${input.personId}`);
+
+  return task.id;
 };
 
 export const deleteTask = async (taskId: string) => {

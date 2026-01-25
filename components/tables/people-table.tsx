@@ -12,7 +12,9 @@ import {
 import { deletePerson } from "@/lib/actions/people";
 import { Person } from "@/lib/types/people";
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 
+import ConfirmDeleteDialog from "../dialogs/confirm-delete-dialog";
 import PersonFormDialog from "../dialogs/person-form-dialog";
 import { Badge } from "../ui/badge";
 
@@ -52,7 +54,14 @@ const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
 
           {people.map((person) => (
             <TableRow key={person.id}>
-              <TableCell className="font-medium">{person.name}</TableCell>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/people/${person.id}`}
+                  className="text-blue-800 hover:underline"
+                >
+                  {person.name}
+                </Link>
+              </TableCell>
 
               <TableCell className="text-muted-foreground">
                 {person.email ?? "—"}
@@ -110,13 +119,16 @@ const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
                   }
                 />
 
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  onClick={() => deletePerson(person.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <ConfirmDeleteDialog
+                  title="Delete person?"
+                  description="This person and their assignments will be removed."
+                  onConfirm={() => deletePerson(person.id)}
+                  trigger={
+                    <Button size="icon" variant="destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  }
+                />
               </TableCell>
             </TableRow>
           ))}

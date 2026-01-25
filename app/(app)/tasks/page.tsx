@@ -1,6 +1,7 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
+import { Button } from "@/components/ui/button";
 import { getPeopleAndBusinesses } from "@/lib/queries/lookups";
 import {
   getCompletedTasks,
@@ -56,8 +57,15 @@ const TasksPage = async (props: TasksPageProps) => {
 
   return (
     <div className="container mx-auto space-y-8 p-6">
-      <h1 className="text-4xl font-bold">TASK LIST</h1>
-      <AddTaskDialog people={people ?? []} businesses={businesses ?? []} />
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">TASK LIST</h1>
+
+        <AddTaskDialog
+          people={people ?? []}
+          businesses={businesses ?? []}
+          trigger={<Button>Add task</Button>}
+        />
+      </div>
 
       <section className="space-y-2">
         <TasksTable
