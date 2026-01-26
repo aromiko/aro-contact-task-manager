@@ -61,7 +61,7 @@ const BusinessesTable = ({
               <TableCell className="font-medium">
                 <Link
                   href={`/businesses/${business.id}`}
-                  className="hover:underline"
+                  className="text-blue-800 hover:underline"
                 >
                   {business.name}
                 </Link>
