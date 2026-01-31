@@ -1,6 +1,6 @@
 import DeleteEntityButton from "@/components/buttons/delete-entity-button";
 import CategoryFormDialog from "@/components/dialogs/category-form-dialog";
-import { ErrorFallback } from "@/components/error-fallback";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import { Button } from "@/components/ui/button";
 import { deleteCategory } from "@/lib/actions/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";

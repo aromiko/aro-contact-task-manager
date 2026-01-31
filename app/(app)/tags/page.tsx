@@ -1,6 +1,6 @@
 import DeleteEntityButton from "@/components/buttons/delete-entity-button";
 import TagFormDialog from "@/components/dialogs/tag-form-dialog";
-import { ErrorFallback } from "@/components/error-fallback";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import { Button } from "@/components/ui/button";
 import { deleteTag } from "@/lib/actions/tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";

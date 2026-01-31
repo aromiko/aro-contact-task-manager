@@ -1,5 +1,5 @@
 import PersonFormDialog from "@/components/dialogs/person-form-dialog";
-import { ErrorFallback } from "@/components/error-fallback";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import PeopleTable from "@/components/tables/people-table";
 import { Button } from "@/components/ui/button";

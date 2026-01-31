@@ -3,7 +3,7 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
 import React from "react";
 
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;

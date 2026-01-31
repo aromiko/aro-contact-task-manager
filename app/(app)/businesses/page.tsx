@@ -1,5 +1,5 @@
 import BusinessFormDialog from "@/components/dialogs/business-form-dialog";
-import { ErrorFallback } from "@/components/error-fallback";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import BusinessesTable from "@/components/tables/businesses-table";
 import { Button } from "@/components/ui/button";
