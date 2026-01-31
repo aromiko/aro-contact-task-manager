@@ -7,6 +7,9 @@ import { getBusinessesLookup, getTagsLookup } from "@/lib/queries/lookups";
 import { getPeople, getPeopleCount } from "@/lib/queries/people";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
+import { Suspense } from "react";
+
+import Loading from "./loading";
 
 type PeoplePageProps = {
   searchParams: {
@@ -40,31 +43,33 @@ const PeoplePage = async (props: PeoplePageProps) => {
     return <ErrorFallback error={error} title="Failed to load people" />;
 
   return (
-    <div className="container mx-auto space-y-8 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">People</h1>
+    <Suspense fallback={<Loading />}>
+      <div className="container mx-auto space-y-8 p-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">People</h1>
 
-        <PersonFormDialog
-          trigger={<Button>Add person</Button>}
-          businesses={businesses}
-          tags={tags}
-        />
+          <PersonFormDialog
+            trigger={<Button>Add person</Button>}
+            businesses={businesses}
+            tags={tags}
+          />
+        </div>
+
+        <section className="space-y-2">
+          <PeopleTable
+            people={people ?? []}
+            businesses={businesses}
+            tags={tags}
+          />
+
+          <TablePagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            paramKey="page"
+          />
+        </section>
       </div>
-
-      <section className="space-y-2">
-        <PeopleTable
-          people={people ?? []}
-          businesses={businesses}
-          tags={tags}
-        />
-
-        <TablePagination
-          page={pagination.page}
-          totalPages={pagination.totalPages}
-          paramKey="page"
-        />
-      </section>
-    </div>
+    </Suspense>
   );
 };
 

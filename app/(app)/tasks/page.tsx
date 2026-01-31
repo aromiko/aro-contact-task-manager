@@ -11,6 +11,9 @@ import {
 } from "@/lib/queries/tasks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
+import { Suspense } from "react";
+
+import Loading from "./loading";
 
 type TasksPageProps = {
   searchParams: Promise<{
@@ -68,47 +71,49 @@ const TasksPage = async (props: TasksPageProps) => {
     );
 
   return (
-    <div className="container mx-auto space-y-8 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Tasks List</h1>
+    <Suspense fallback={<Loading />}>
+      <div className="container mx-auto space-y-8 p-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">Tasks List</h1>
 
-        <AddTaskDialog
-          people={people ?? []}
-          businesses={businesses ?? []}
-          trigger={<Button>Add task</Button>}
-        />
+          <AddTaskDialog
+            people={people ?? []}
+            businesses={businesses ?? []}
+            trigger={<Button>Add task</Button>}
+          />
+        </div>
+
+        <section className="space-y-2">
+          <TasksTable
+            tasks={openTasks ?? []}
+            tableTitle="Open Tasks"
+            people={people}
+            businesses={businesses}
+          />
+
+          <TablePagination
+            page={openPagination.page}
+            totalPages={openPagination.totalPages}
+            paramKey="openPage"
+          />
+        </section>
+
+        <section className="space-y-2">
+          <TasksTable
+            tasks={completedTasks ?? []}
+            tableTitle="Completed Tasks"
+            people={people}
+            businesses={businesses}
+          />
+
+          <TablePagination
+            page={completedPagination.page}
+            totalPages={completedPagination.totalPages}
+            paramKey="completedPage"
+          />
+        </section>
       </div>
-
-      <section className="space-y-2">
-        <TasksTable
-          tasks={openTasks ?? []}
-          tableTitle="Open Tasks"
-          people={people}
-          businesses={businesses}
-        />
-
-        <TablePagination
-          page={openPagination.page}
-          totalPages={openPagination.totalPages}
-          paramKey="openPage"
-        />
-      </section>
-
-      <section className="space-y-2">
-        <TasksTable
-          tasks={completedTasks ?? []}
-          tableTitle="Completed Tasks"
-          people={people}
-          businesses={businesses}
-        />
-
-        <TablePagination
-          page={completedPagination.page}
-          totalPages={completedPagination.totalPages}
-          paramKey="completedPage"
-        />
-      </section>
-    </div>
+    </Suspense>
   );
 };
 
