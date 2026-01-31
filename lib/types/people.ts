@@ -1,15 +1,9 @@
-export type Person = {
-  id: string;
+import type { BaseEntity, NamedRef } from "./base";
+
+export interface Person extends BaseEntity {
   name: string;
   email: string | null;
   phone: string | null;
-  created_at: string;
-  business: {
-    id: string;
-    name: string;
-  } | null;
-  tags: {
-    id: string;
-    name: string;
-  }[];
-};
+  business: NamedRef | null;
+  tags: NamedRef[];
+}

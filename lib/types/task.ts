@@ -1,28 +1,20 @@
-export type PersonRef = {
-  id: string;
-  name: string;
-};
+import type { BaseEntity, ISODateString, NamedRef } from "./base";
 
-export type BusinessRef = {
-  id: string;
-  name: string;
-};
+export type TaskStatus = "open" | "completed";
 
 export type TaskAssignment = {
-  person?: PersonRef[] | null;
-  business?: BusinessRef[] | null;
+  person?: NamedRef[] | null;
+  business?: NamedRef[] | null;
 };
 
 export type TaskAssignPayload =
   | { personId: string; businessId?: never }
   | { businessId: string; personId?: never };
 
-export type Task = {
-  id: string;
+export interface Task extends BaseEntity {
   title: string;
-  status: "open" | "completed";
-  created_at: string;
+  status: TaskStatus;
   task_assignments?: TaskAssignment | TaskAssignment[];
-};
+}
 
 export type TaskAction = "complete" | "reopen" | "delete";
