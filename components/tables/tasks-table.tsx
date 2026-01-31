@@ -214,6 +214,7 @@ const TasksTable = ({
                               size="icon"
                               variant="destructive"
                               disabled={isLocked(task.id)}
+                              aria-label="Delete task"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
