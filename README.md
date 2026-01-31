@@ -83,3 +83,12 @@ You can explore the app using the demo account below if you prefer not to sign u
 - No client-side data fetching for core CRUD operations
 
 This architecture keeps the codebase predictable, testable, and easy to extend.
+
+
+## Architecture & Security Notes
+
+- Built using Next.js App Router with server components handling data fetching
+- Client components are limited to interactivity and UI concerns
+- Supabase Row-Level Security (RLS) is enforced to ensure users can only access their own records
+- All mutations are intended to be validated server-side
+- Route-level loading and error boundaries are implemented for application resilience
