@@ -38,11 +38,15 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
 
   const { data: person } = await supabase
     .from("people")
-    .select("name")
+    .select("id, name, business_id")
     .eq("id", personId)
     .single();
 
   if (error) return <pre>{error.message}</pre>;
+
+  if (!person) {
+    return <pre>Person not found</pre>;
+  }
 
   return (
     <div className="container mx-auto space-y-6 p-6">
@@ -52,6 +56,7 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
         <AddTaskDialog
           trigger={<Button>Add task</Button>}
           personId={personId}
+          businessId={person.business_id}
         />
       </div>
 

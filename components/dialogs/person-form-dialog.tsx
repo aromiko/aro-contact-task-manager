@@ -46,16 +46,20 @@ const PersonFormDialog = ({
   tags = [],
 }: PersonFormDialogProps) => {
   const [pending, startTransition] = useTransition();
+  const [selectedBusinessId, setSelectedBusinessId] = useState(
+    person?.business_id ?? "",
+  );
 
   const action = (formData: FormData) => {
     startTransition(async () => {
-      const rawBusinessId = formData.get("business_id")?.toString();
-
       const name = String(formData.get("name"));
       const email = formData.get("email")?.toString() || null;
       const phone = formData.get("phone")?.toString() || null;
-      const business_id =
-        rawBusinessId && rawBusinessId !== "none" ? rawBusinessId : null;
+      const business_id = formData.get("business_id")?.toString();
+
+      if (!business_id) {
+        throw new Error("Business is required");
+      }
 
       const tagIds = formData.getAll("tag_ids").map((id) => id.toString());
 
@@ -120,15 +124,15 @@ const PersonFormDialog = ({
 
           <Select
             name="business_id"
-            defaultValue={person?.business_id ?? "none"}
+            defaultValue={person?.business_id ?? undefined}
+            onValueChange={setSelectedBusinessId}
+            required
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select business" />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="none">No business</SelectItem>
-
               {businesses.map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
@@ -155,7 +159,7 @@ const PersonFormDialog = ({
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || !selectedBusinessId}>
               {pending ? "Saving…" : "Save"}
             </Button>
           </div>

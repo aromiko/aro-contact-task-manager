@@ -19,12 +19,21 @@ import {
 import { createTask } from "@/lib/actions/tasks";
 import { useState, useTransition } from "react";
 
-type Option = { id: string; name: string };
+type PersonOption = {
+  id: string;
+  name: string;
+  business_id: string;
+};
+
+type BusinessOption = {
+  id: string;
+  name: string;
+};
 
 type AddTaskDialogProps = {
   trigger: React.ReactNode;
-  people?: Option[];
-  businesses?: Option[];
+  people?: PersonOption[];
+  businesses?: BusinessOption[];
   personId?: string;
   businessId?: string;
 };
@@ -47,19 +56,44 @@ const AddTaskDialog = ({
   const handleCreate = () => {
     if (!title.trim()) return;
 
+    if (!isBusinessScoped && !isPersonScoped && !type) {
+      throw new Error("Please choose where to assign the task");
+    }
+
     startTransition(async () => {
+      let resolvedBusinessId: string | null = null;
+      let resolvedPersonId: string | undefined = undefined;
+
+      if (isBusinessScoped && businessId) {
+        resolvedBusinessId = businessId;
+      }
+
+      if (isPersonScoped && personId && businessId) {
+        resolvedBusinessId = businessId;
+        resolvedPersonId = personId;
+      }
+
+      if (!isBusinessScoped && !isPersonScoped) {
+        if (type === "business") {
+          resolvedBusinessId = selectedId;
+        }
+
+        if (type === "person") {
+          const person = people?.find((p) => p.id === selectedId);
+          if (!person) throw new Error("Person not found");
+          resolvedBusinessId = person.business_id;
+          resolvedPersonId = person.id;
+        }
+      }
+
+      if (!resolvedBusinessId) {
+        throw new Error("Business ID could not be resolved");
+      }
+
       await createTask({
         title,
-        personId: isPersonScoped
-          ? personId
-          : !isBusinessScoped && type === "person"
-            ? (selectedId ?? undefined)
-            : undefined,
-        businessId: isBusinessScoped
-          ? businessId
-          : !isPersonScoped && type === "business"
-            ? (selectedId ?? undefined)
-            : undefined,
+        businessId: resolvedBusinessId,
+        personId: resolvedPersonId,
       });
 
       setTitle("");
@@ -96,7 +130,7 @@ const AddTaskDialog = ({
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Assign to (optional)" />
+                <SelectValue placeholder="Assign to" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="person">Person</SelectItem>
@@ -137,7 +171,11 @@ const AddTaskDialog = ({
 
           <Button
             className="w-full"
-            disabled={!title.trim() || isPending}
+            disabled={
+              !title.trim() ||
+              isPending ||
+              (!isBusinessScoped && !isPersonScoped && (!type || !selectedId))
+            }
             onClick={handleCreate}
           >
             {isPending ? "Creating…" : "Create Task"}
