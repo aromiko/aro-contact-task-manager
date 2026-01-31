@@ -3,7 +3,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export const getPeopleLookup = async (supabase: SupabaseClient) => {
   const { data, error } = await supabase
     .from("people")
-    .select("id, name")
+    .select("id, name, business_id")
     .order("name");
 
   if (error) throw error;
