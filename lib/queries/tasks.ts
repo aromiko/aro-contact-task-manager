@@ -2,16 +2,30 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 import { PaginationRange } from "../types/pagination";
 
-export const getTaskCounts = async (supabase: SupabaseClient) => {
+export const getTaskCounts = async (
+  supabase: SupabaseClient,
+  userId: string,
+) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   const [{ count: openCount }, { count: completedCount }] = await Promise.all([
     supabase
       .from("tasks")
       .select("id", { count: "exact", head: true })
+      .in("business_id", businessIds) // Scope by user's businesses
       .eq("status", "open"),
 
     supabase
       .from("tasks")
       .select("id", { count: "exact", head: true })
+      .in("business_id", businessIds) // Scope by user's businesses
       .eq("status", "completed"),
   ]);
 
@@ -23,8 +37,18 @@ export const getTaskCounts = async (supabase: SupabaseClient) => {
 
 export const getOpenTasks = async (
   supabase: SupabaseClient,
+  userId: string,
   range: PaginationRange,
 ) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   return supabase
     .from("tasks")
     .select(
@@ -39,6 +63,7 @@ export const getOpenTasks = async (
       )
     `,
     )
+    .in("business_id", businessIds) // Scope by user's businesses
     .eq("status", "open")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
@@ -46,8 +71,18 @@ export const getOpenTasks = async (
 
 export const getCompletedTasks = async (
   supabase: SupabaseClient,
+  userId: string,
   range: PaginationRange,
 ) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   return supabase
     .from("tasks")
     .select(
@@ -62,6 +97,7 @@ export const getCompletedTasks = async (
       )
     `,
     )
+    .in("business_id", businessIds) // Scope by user's businesses
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);

@@ -32,7 +32,12 @@ const TasksPage = async (props: TasksPageProps) => {
 
   const supabase = await createSupabaseServerClient();
 
-  const { openCount, completedCount } = await getTaskCounts(supabase);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { openCount, completedCount } = await getTaskCounts(supabase, user.id);
 
   const openPagination = getPagination({
     rawPage: rawOpenPage,
@@ -52,8 +57,8 @@ const TasksPage = async (props: TasksPageProps) => {
     people,
     businesses,
   ] = await Promise.all([
-    getOpenTasks(supabase, openPagination),
-    getCompletedTasks(supabase, completedPagination),
+    getOpenTasks(supabase, user.id, openPagination),
+    getCompletedTasks(supabase, user.id, completedPagination),
     getPeopleLookup(supabase),
     getBusinessesLookup(supabase),
   ]);

@@ -26,7 +26,12 @@ const BusinessesPage = async (props: BusinessesPageProps) => {
 
   const supabase = await createSupabaseServerClient();
 
-  const totalCount = await getBusinessCount(supabase);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const totalCount = await getBusinessCount(supabase, user.id);
 
   const pagination = getPagination({
     rawPage,
@@ -35,7 +40,7 @@ const BusinessesPage = async (props: BusinessesPageProps) => {
   });
 
   const [{ data: businesses, error }, categories, tags] = await Promise.all([
-    getBusinesses(supabase, pagination),
+    getBusinesses(supabase, user.id, pagination),
     getCategories(supabase),
     getTags(supabase),
   ]);

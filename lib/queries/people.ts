@@ -2,10 +2,25 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 import { PaginationRange } from "../types/pagination";
 
-export const getPeopleCount = async (supabase: SupabaseClient) => {
+export const getPeopleCount = async (
+  supabase: SupabaseClient,
+  userId: string,
+) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) {
+    throw bizError;
+  }
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   const { count, error } = await supabase
     .from("people")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .in("business_id", businessIds);
 
   if (error) {
     throw error;
@@ -16,8 +31,18 @@ export const getPeopleCount = async (supabase: SupabaseClient) => {
 
 export const getPeople = async (
   supabase: SupabaseClient,
+  userId: string,
   range: { from: number; to: number },
 ) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   const { data, error } = await supabase
     .from("people")
     .select(
@@ -39,6 +64,7 @@ export const getPeople = async (
       )
     `,
     )
+    .in("business_id", businessIds) // Scope to user's businesses
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 

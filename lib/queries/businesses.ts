@@ -2,10 +2,14 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 import { PaginationRange } from "../types/pagination";
 
-export const getBusinessCount = async (supabase: SupabaseClient) => {
+export const getBusinessCount = async (
+  supabase: SupabaseClient,
+  userId: string,
+) => {
   const { count, error } = await supabase
     .from("businesses")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", userId); // Scope by user
 
   if (error) throw error;
   return count ?? 0;
@@ -13,6 +17,7 @@ export const getBusinessCount = async (supabase: SupabaseClient) => {
 
 export const getBusinesses = async (
   supabase: SupabaseClient,
+  userId: string,
   range: PaginationRange,
 ) => {
   const { data, error } = await supabase
@@ -36,6 +41,7 @@ export const getBusinesses = async (
       )
     `,
     )
+    .eq("owner_id", userId) // Scope by user
     .range(range.from, range.to)
     .order("created_at", { ascending: false });
 
