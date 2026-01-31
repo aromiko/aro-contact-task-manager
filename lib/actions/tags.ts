@@ -3,10 +3,16 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+import { requireUser } from "./auth";
+
 export const createTag = async (name: string) => {
   const supabase = await createSupabaseServerClient();
+  const user = await requireUser(supabase);
 
-  const { error } = await supabase.from("tags").insert({ name });
+  const { error } = await supabase.from("tags").insert({
+    name,
+    user_id: user.id,
+  });
 
   if (error) throw error;
 
