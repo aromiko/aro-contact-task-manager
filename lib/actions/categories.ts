@@ -3,7 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-import { requireUser } from "./auth";
+import { requireUser } from "./guards/auth";
+import { assertCategoryOwnership } from "./guards/categories";
 
 const MAX_CATEGORY_LENGTH = 50;
 
@@ -36,7 +37,7 @@ export const createCategory = async (name: string) => {
 
 export const updateCategory = async (id: string, name: string) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!id) {
     throw new Error("Invalid category");
@@ -52,10 +53,13 @@ export const updateCategory = async (id: string, name: string) => {
     throw new Error("Category name is too long");
   }
 
+  await assertCategoryOwnership(supabase, id, user.id);
+
   const { error } = await supabase
     .from("categories")
     .update({ name: value })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   if (error) {
     console.error("updateCategory failed", error);
@@ -67,13 +71,19 @@ export const updateCategory = async (id: string, name: string) => {
 
 export const deleteCategory = async (id: string) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!id) {
     throw new Error("Invalid category");
   }
 
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  await assertCategoryOwnership(supabase, id, user.id);
+
+  const { error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   if (error) {
     console.error("deleteCategory failed", error);

@@ -3,21 +3,27 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-import { requireUser } from "./auth";
+import { requireUser } from "./guards/auth";
+import { assertBusinessOwnership } from "./guards/business";
 
 export const createBusiness = async (input: { name: string }) => {
   const supabase = await createSupabaseServerClient();
+  const user = await requireUser(supabase);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const name = input.name?.trim();
 
-  if (!user) throw new Error("Not authenticated");
+  if (!name) {
+    throw new Error("Business name is required");
+  }
+
+  if (name.length > 150) {
+    throw new Error("Business name is too long");
+  }
 
   const { data, error } = await supabase
     .from("businesses")
     .insert({
-      name: input.name,
+      name,
       owner_id: user.id,
     })
     .select("id")
@@ -34,7 +40,7 @@ export const createBusiness = async (input: { name: string }) => {
 
 export const updateBusiness = async (id: string, input: { name: string }) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!id) {
     throw new Error("Invalid business");
@@ -50,10 +56,13 @@ export const updateBusiness = async (id: string, input: { name: string }) => {
     throw new Error("Business name is too long");
   }
 
+  await assertBusinessOwnership(supabase, id, user.id);
+
   const { error } = await supabase
     .from("businesses")
     .update({ name })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("owner_id", user.id);
 
   if (error) {
     console.error("updateBusiness failed", error);
@@ -69,26 +78,36 @@ export const updateBusinessTags = async (
   tagIds: string[],
 ) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!businessId) {
     throw new Error("Invalid business");
   }
 
+  await assertBusinessOwnership(supabase, businessId, user.id);
+
   const uniqueTagIds = Array.from(new Set(tagIds.filter(Boolean)));
 
-  await supabase.from("business_tags").delete().eq("business_id", businessId);
+  const { error: deleteError } = await supabase
+    .from("business_tags")
+    .delete()
+    .eq("business_id", businessId);
+
+  if (deleteError) {
+    console.error("delete business_tags failed", deleteError);
+    throw new Error("Unable to update business tags");
+  }
 
   if (uniqueTagIds.length > 0) {
-    const { error } = await supabase.from("business_tags").insert(
+    const { error: insertError } = await supabase.from("business_tags").insert(
       uniqueTagIds.map((tagId) => ({
         business_id: businessId,
         tag_id: tagId,
       })),
     );
 
-    if (error) {
-      console.error("updateBusinessTags failed", error);
+    if (insertError) {
+      console.error("insert business_tags failed", insertError);
       throw new Error("Unable to update business tags");
     }
   }
@@ -102,29 +121,38 @@ export const updateBusinessCategories = async (
   categoryIds: string[],
 ) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!businessId) {
     throw new Error("Invalid business");
   }
 
+  await assertBusinessOwnership(supabase, businessId, user.id);
+
   const uniqueCategoryIds = Array.from(new Set(categoryIds.filter(Boolean)));
 
-  await supabase
+  const { error: deleteError } = await supabase
     .from("business_categories")
     .delete()
     .eq("business_id", businessId);
 
-  if (uniqueCategoryIds.length > 0) {
-    const { error } = await supabase.from("business_categories").insert(
-      uniqueCategoryIds.map((categoryId) => ({
-        business_id: businessId,
-        category_id: categoryId,
-      })),
-    );
+  if (deleteError) {
+    console.error("delete business_categories failed", deleteError);
+    throw new Error("Unable to update business categories");
+  }
 
-    if (error) {
-      console.error("updateBusinessCategories failed", error);
+  if (uniqueCategoryIds.length > 0) {
+    const { error: insertError } = await supabase
+      .from("business_categories")
+      .insert(
+        uniqueCategoryIds.map((categoryId) => ({
+          business_id: businessId,
+          category_id: categoryId,
+        })),
+      );
+
+    if (insertError) {
+      console.error("insert business_categories failed", insertError);
       throw new Error("Unable to update business categories");
     }
   }
@@ -135,13 +163,19 @@ export const updateBusinessCategories = async (
 
 export const deleteBusiness = async (id: string) => {
   const supabase = await createSupabaseServerClient();
-  await requireUser(supabase);
+  const user = await requireUser(supabase);
 
   if (!id) {
     throw new Error("Invalid business");
   }
 
-  const { error } = await supabase.from("businesses").delete().eq("id", id);
+  await assertBusinessOwnership(supabase, id, user.id);
+
+  const { error } = await supabase
+    .from("businesses")
+    .delete()
+    .eq("id", id)
+    .eq("owner_id", user.id);
 
   if (error) {
     console.error("deleteBusiness failed", error);
