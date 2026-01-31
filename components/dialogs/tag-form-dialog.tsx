@@ -1,16 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Input } from "@/components/ui/input";
 import { createTag, updateTag } from "@/lib/actions/tags";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 type TagFormDialogProps = {
   trigger: React.ReactNode;
@@ -21,62 +14,49 @@ type TagFormDialogProps = {
 };
 
 const TagFormDialog = ({ trigger, tag }: TagFormDialogProps) => {
-  const [open, setOpen] = useState(false);
   const [name, setName] = useState(tag?.name ?? "");
-  const [pending, startTransition] = useTransition();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (
+    closeDialog: () => void,
+    setError: (error: string | null) => void,
+  ) => {
+    if (!name.trim()) {
+      setError("Tag name is required");
+      return;
+    }
 
-    if (!name.trim()) return;
-
-    startTransition(async () => {
+    try {
       if (tag) {
         await updateTag(tag.id, name);
       } else {
         await createTag(name);
       }
-
-      setOpen(false);
+      closeDialog();
       setName("");
-    });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to save tag";
+      setError(message);
+      throw err;
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{tag ? "Edit tag" : "Add tag"}</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            autoFocus
-            placeholder="Tag name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={pending}
-          />
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={pending}
-            >
-              Cancel
-            </Button>
-
-            <Button type="submit" disabled={pending || !name.trim()}>
-              {pending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      trigger={trigger}
+      title={tag ? "Edit tag" : "Add tag"}
+      onSubmit={handleSubmit}
+    >
+      {({ isPending }) => (
+        <Input
+          autoFocus
+          placeholder="Tag name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isPending}
+          aria-label="Tag name"
+        />
+      )}
+    </FormDialog>
   );
 };
 

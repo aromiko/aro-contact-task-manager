@@ -1,13 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -17,7 +10,7 @@ import {
   updateBusinessCategories,
   updateBusinessTags,
 } from "@/lib/actions/businesses";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 type Option = {
   id: string;
@@ -42,28 +35,43 @@ const BusinessFormDialog = ({
   tags = [],
   categories = [],
 }: BusinessFormDialogProps) => {
-  const [pending, startTransition] = useTransition();
+  const [name, setName] = useState(business?.name ?? "");
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    business?.tagIds ?? [],
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    business?.categoryIds ?? [],
+  );
 
-  const action = (formData: FormData) => {
-    startTransition(async () => {
-      const name = String(formData.get("name"));
+  const handleSubmit = async (
+    closeDialog: () => void,
+    setError: (error: string | null) => void,
+  ) => {
+    if (!name.trim()) {
+      setError("Business name is required");
+      return;
+    }
 
-      const tagIds = formData.getAll("tag_ids").map((id) => id.toString());
-
-      const categoryIds = formData
-        .getAll("category_ids")
-        .map((id) => id.toString());
-
+    try {
       if (business?.id) {
         await updateBusiness(business.id, { name });
-        await updateBusinessTags(business.id, tagIds);
-        await updateBusinessCategories(business.id, categoryIds);
+        await updateBusinessTags(business.id, selectedTags);
+        await updateBusinessCategories(business.id, selectedCategories);
       } else {
         const businessId = await createBusiness({ name });
-        await updateBusinessTags(businessId, tagIds);
-        await updateBusinessCategories(businessId, categoryIds);
+        await updateBusinessTags(businessId, selectedTags);
+        await updateBusinessCategories(businessId, selectedCategories);
       }
-    });
+      closeDialog();
+      setName("");
+      setSelectedTags([]);
+      setSelectedCategories([]);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save business";
+      setError(message);
+      throw err;
+    }
   };
 
   const tagOptions = tags.map((tag) => ({
@@ -76,75 +84,49 @@ const BusinessFormDialog = ({
     value: cat.id,
   }));
 
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    business?.tagIds ?? [],
-  );
-
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    business?.categoryIds ?? [],
-  );
-
   return (
-    <Dialog>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {business ? "Edit business" : "Add business"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form action={action} className="space-y-4">
+    <FormDialog
+      trigger={trigger}
+      title={business ? "Edit business" : "Add business"}
+      onSubmit={handleSubmit}
+    >
+      {({ isPending }) => (
+        <div className="space-y-4">
           <Input
-            name="name"
             placeholder="Business name"
-            defaultValue={business?.name}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isPending}
+            aria-label="Business name"
             required
           />
 
           <div className="space-y-2">
             <Label>Categories</Label>
-
             <MultiSelect
               options={categoryOptions}
               value={selectedCategories}
               onValueChange={setSelectedCategories}
-              defaultValue={business?.categoryIds ?? []}
               placeholder="Select categories"
               emptyIndicator="No categories found"
+              disabled={isPending}
             />
-
-            {selectedCategories.map((id) => (
-              <input key={id} type="hidden" name="category_ids" value={id} />
-            ))}
           </div>
 
           <div className="space-y-2">
             <Label>Tags</Label>
-
             <MultiSelect
               options={tagOptions}
               value={selectedTags}
               onValueChange={setSelectedTags}
-              defaultValue={business?.tagIds ?? []}
               placeholder="Select tags"
               emptyIndicator="No tags found"
+              disabled={isPending}
             />
-
-            {selectedTags.map((id) => (
-              <input key={id} type="hidden" name="tag_ids" value={id} />
-            ))}
           </div>
-
-          <div className="flex justify-end">
-            <Button type="submit" disabled={pending}>
-              {pending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      )}
+    </FormDialog>
   );
 };
 

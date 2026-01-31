@@ -1,16 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Input } from "@/components/ui/input";
 import { createCategory, updateCategory } from "@/lib/actions/categories";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 type CategoryFormDialogProps = {
   trigger: React.ReactNode;
@@ -21,64 +14,50 @@ type CategoryFormDialogProps = {
 };
 
 const CategoryFormDialog = ({ trigger, category }: CategoryFormDialogProps) => {
-  const [open, setOpen] = useState(false);
   const [name, setName] = useState(category?.name ?? "");
-  const [pending, startTransition] = useTransition();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (
+    closeDialog: () => void,
+    setError: (error: string | null) => void,
+  ) => {
+    if (!name.trim()) {
+      setError("Category name is required");
+      return;
+    }
 
-    if (!name.trim()) return;
-
-    startTransition(async () => {
+    try {
       if (category) {
         await updateCategory(category.id, name);
       } else {
         await createCategory(name);
       }
-
-      setOpen(false);
+      closeDialog();
       setName("");
-    });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save category";
+      setError(message);
+      throw err;
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {category ? "Edit category" : "Add category"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            autoFocus
-            placeholder="Category name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={pending}
-          />
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={pending}
-            >
-              Cancel
-            </Button>
-
-            <Button type="submit" disabled={pending || !name.trim()}>
-              {pending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      trigger={trigger}
+      title={category ? "Edit category" : "Add category"}
+      onSubmit={handleSubmit}
+    >
+      {({ isPending }) => (
+        <Input
+          autoFocus
+          placeholder="Category name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isPending}
+          aria-label="Category name"
+        />
+      )}
+    </FormDialog>
   );
 };
 
