@@ -1,4 +1,5 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,10 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
     .eq("id", personId)
     .single();
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return (
+      <ErrorFallback error={error} title="Failed to load person's tasks" />
+    );
 
   if (!person) {
     return <pre>Person not found</pre>;

@@ -1,5 +1,6 @@
 import DeleteEntityButton from "@/components/buttons/delete-entity-button";
 import CategoryFormDialog from "@/components/dialogs/category-form-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import { Button } from "@/components/ui/button";
 import { deleteCategory } from "@/lib/actions/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -12,7 +13,8 @@ const CategoriesPage = async () => {
     .select("id, name")
     .order("name");
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return <ErrorFallback error={error} title="Failed to load categories" />;
 
   return (
     <div className="container mx-auto space-y-6 p-6">

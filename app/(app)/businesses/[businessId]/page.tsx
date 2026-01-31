@@ -1,4 +1,5 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,10 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
     .eq("id", businessId)
     .maybeSingle();
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return (
+      <ErrorFallback error={error} title="Failed to load business tasks" />
+    );
   if (!business) return <p>Business not found</p>;
 
   return (

@@ -1,4 +1,5 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,17 @@ const TasksPage = async (props: TasksPageProps) => {
     getBusinessesLookup(supabase),
   ]);
 
-  if (openError) return <pre>{openError.message}</pre>;
-  if (completedError) return <pre>{completedError.message}</pre>;
+  if (openError)
+    return (
+      <ErrorFallback error={openError} title="Failed to load open tasks" />
+    );
+  if (completedError)
+    return (
+      <ErrorFallback
+        error={completedError}
+        title="Failed to load completed tasks"
+      />
+    );
 
   return (
     <div className="container mx-auto space-y-8 p-6">

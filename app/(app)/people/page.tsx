@@ -1,4 +1,5 @@
 import PersonFormDialog from "@/components/dialogs/person-form-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import PeopleTable from "@/components/tables/people-table";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,8 @@ const PeoplePage = async (props: PeoplePageProps) => {
     getTagsLookup(supabase),
   ]);
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return <ErrorFallback error={error} title="Failed to load people" />;
 
   return (
     <div className="container mx-auto space-y-8 p-6">

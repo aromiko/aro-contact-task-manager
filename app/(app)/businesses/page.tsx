@@ -1,4 +1,5 @@
 import BusinessFormDialog from "@/components/dialogs/business-form-dialog";
+import { ErrorFallback } from "@/components/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import BusinessesTable from "@/components/tables/businesses-table";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,8 @@ const BusinessesPage = async (props: BusinessesPageProps) => {
     getTags(supabase),
   ]);
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return <ErrorFallback error={error} title="Failed to load businesses" />;
 
   return (
     <div className="container mx-auto space-y-8 p-6">
