@@ -17,24 +17,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createTask } from "@/lib/actions/tasks";
+import { BusinessItem } from "@/lib/types/business";
+import { PersonLookupItem } from "@/lib/types/people";
 import { AlertCircle } from "lucide-react";
 import { useState, useTransition } from "react";
 
-type PersonOption = {
-  id: string;
-  name: string;
-  business_id: string;
-};
-
-type BusinessOption = {
-  id: string;
-  name: string;
-};
-
 type AddTaskDialogProps = {
   trigger: React.ReactNode;
-  people?: PersonOption[];
-  businesses?: BusinessOption[];
+  people?: PersonLookupItem[];
+  businesses?: BusinessItem[];
   personId?: string;
   businessId?: string;
 };
@@ -93,6 +84,12 @@ const AddTaskDialog = ({
               setError("Selected person not found");
               return;
             }
+
+            if (!person.business_id) {
+              setError("Selected person has no business assigned");
+              return;
+            }
+
             resolvedBusinessId = person.business_id;
             resolvedPersonId = person.id;
           }

@@ -1,15 +1,15 @@
 export type ISODateString = string;
 
-export interface BaseEntity {
+export type BaseEntity = {
   id: string;
   created_at: string | null;
-}
+};
 
-export interface UserOwnedEntity {
+export type UserOwnedEntity = {
   user_id: string;
-}
+};
 
-export interface NamedRef {
+export type NamedRef = {
   id: string;
   name: string;
-}
+};

@@ -1,6 +1,7 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
+import { mapTaskToTableItem } from "@/components/tables/task-table-mapper";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
 import { getTaskCountByPerson, getTasksByPerson } from "@/lib/queries/tasks";
@@ -52,6 +53,8 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
     pagination,
   );
 
+  const taskItems = (tasks ?? []).map(mapTaskToTableItem);
+
   if (error)
     return (
       <ErrorFallback error={error} title="Failed to load person's tasks" />
@@ -66,7 +69,7 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
           <AddTaskDialog
             trigger={<Button>Add task</Button>}
             personId={personId}
-            businessId={person.business_id}
+            businessId={person.business_id ?? undefined}
           />
         </div>
 
@@ -78,7 +81,7 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
         </Link>
 
         <div className="mt-6">
-          <TasksTable tasks={tasks ?? []} hideAssignedTo />
+          <TasksTable tasks={taskItems ?? []} hideAssignedTo />
         </div>
 
         <TablePagination

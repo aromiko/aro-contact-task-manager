@@ -2,6 +2,7 @@ import PersonFormDialog from "@/components/dialogs/person-form-dialog";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
 import PeopleTable from "@/components/tables/people-table";
+import { mapPersonToTableItem } from "@/components/tables/people-table-mapper";
 import { Button } from "@/components/ui/button";
 import { getBusinessesLookup, getTagsLookup } from "@/lib/queries/lookups";
 import { getPeople, getPeopleCount } from "@/lib/queries/people";
@@ -47,6 +48,8 @@ const PeoplePage = async (props: PeoplePageProps) => {
   if (error)
     return <ErrorFallback error={error} title="Failed to load people" />;
 
+  const peopleItems = (people ?? []).map(mapPersonToTableItem);
+
   return (
     <Suspense fallback={<Loading />}>
       <div className="container mx-auto space-y-8 p-6">
@@ -62,7 +65,7 @@ const PeoplePage = async (props: PeoplePageProps) => {
 
         <section className="space-y-2">
           <PeopleTable
-            people={people ?? []}
+            people={peopleItems ?? []}
             businesses={businesses ?? []}
             tags={tags}
           />

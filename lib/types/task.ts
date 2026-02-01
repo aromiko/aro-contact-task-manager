@@ -25,3 +25,22 @@ export type TaskAssignmentJoin = {
 export type Task = TaskRow & TaskAssignmentJoin;
 
 export type TaskAction = "complete" | "reopen" | "delete";
+
+export type TaskTableItem = {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string | null;
+  assignee:
+    | {
+        type: "person";
+        id: string;
+        name: string;
+      }
+    | {
+        type: "business";
+        id: string;
+        name: string;
+      }
+    | null;
+};

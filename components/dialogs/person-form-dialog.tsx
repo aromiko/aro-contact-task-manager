@@ -25,7 +25,7 @@ type PersonFormDialogProps = {
     name: string;
     email: string | null;
     phone: string | null;
-    business_id: string;
+    business_id: string | null;
     tagIds?: string[];
   };
   businesses: { id: string; name: string }[];

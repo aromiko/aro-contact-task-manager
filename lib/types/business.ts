@@ -5,3 +5,8 @@ export type Business = {
   tags: { id: string; name: string }[];
   categories: { id: string; name: string }[];
 };
+
+export type BusinessItem = {
+  id: string;
+  name: string;
+};

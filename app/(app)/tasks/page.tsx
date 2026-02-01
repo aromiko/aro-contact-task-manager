@@ -1,6 +1,7 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
+import { mapTaskToTableItem } from "@/components/tables/task-table-mapper";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
 import { getBusinessesLookup, getPeopleLookup } from "@/lib/queries/lookups";
@@ -75,6 +76,9 @@ const TasksPage = async (props: TasksPageProps) => {
       />
     );
 
+  const openTasksItems = (openTasks ?? []).map(mapTaskToTableItem);
+  const completedTasksItems = (completedTasks ?? []).map(mapTaskToTableItem);
+
   return (
     <Suspense fallback={<Loading />}>
       <div className="container mx-auto space-y-8 p-6">
@@ -90,7 +94,7 @@ const TasksPage = async (props: TasksPageProps) => {
 
         <section className="space-y-2">
           <TasksTable
-            tasks={openTasks ?? []}
+            tasks={openTasksItems ?? []}
             tableTitle="Open Tasks"
             people={people}
             businesses={businesses}
@@ -105,7 +109,7 @@ const TasksPage = async (props: TasksPageProps) => {
 
         <section className="space-y-2">
           <TasksTable
-            tasks={completedTasks ?? []}
+            tasks={completedTasksItems}
             tableTitle="Completed Tasks"
             people={people}
             businesses={businesses}

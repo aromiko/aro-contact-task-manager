@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deletePerson } from "@/lib/actions/people";
-import { Person } from "@/lib/types/people";
+import { PersonTableItem } from "@/lib/types/people";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,7 +19,7 @@ import PersonFormDialog from "../dialogs/person-form-dialog";
 import { Badge } from "../ui/badge";
 
 type PeopleTableProps = {
-  people: Person[];
+  people: PersonTableItem[];
   businesses: { id: string; name: string }[];
   tags: { id: string; name: string }[];
 };
@@ -117,7 +117,7 @@ const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
                     name: person.name,
                     email: person.email,
                     phone: person.phone,
-                    business_id: person.business.id,
+                    business_id: person.business?.id ?? null,
                     tagIds: person.tags.map((t) => t.id),
                   }}
                   businesses={businesses}

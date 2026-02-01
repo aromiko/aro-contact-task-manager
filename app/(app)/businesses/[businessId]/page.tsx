@@ -1,6 +1,7 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
 import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
+import { mapTaskToTableItem } from "@/components/tables/task-table-mapper";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +54,8 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
     pagination,
   );
 
+  const taskItems = (tasks ?? []).map(mapTaskToTableItem);
+
   if (error)
     return (
       <ErrorFallback error={error} title="Failed to load business tasks" />
@@ -78,7 +81,7 @@ const BusinessTasksPage = async (props: BusinessTasksPageProps) => {
         </Link>
 
         <div className="mt-6">
-          <TasksTable tasks={tasks ?? []} showPersonOnly hideAssignedTo />
+          <TasksTable tasks={taskItems ?? []} showPersonOnly hideAssignedTo />
         </div>
 
         <TablePagination
