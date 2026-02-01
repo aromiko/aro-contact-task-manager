@@ -99,22 +99,25 @@ const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
               </TableCell>
 
               <TableCell className="text-muted-foreground text-right">
-                {new Date(person.created_at).toLocaleString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {person.created_at
+                  ? new Date(person.created_at).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "—"}
               </TableCell>
               <TableCell className="space-x-2 text-right">
                 <PersonFormDialog
+                  key={person.id}
                   person={{
                     id: person.id,
                     name: person.name,
                     email: person.email,
                     phone: person.phone,
-                    business_id: person.business?.id ?? null,
+                    business_id: person.business.id,
                     tagIds: person.tags.map((t) => t.id),
                   }}
                   businesses={businesses}

@@ -47,6 +47,8 @@ const PeoplePage = async (props: PeoplePageProps) => {
   if (error)
     return <ErrorFallback error={error} title="Failed to load people" />;
 
+  console.log("TAGS:", tags);
+
   return (
     <Suspense fallback={<Loading />}>
       <div className="container mx-auto space-y-8 p-6">
@@ -63,7 +65,7 @@ const PeoplePage = async (props: PeoplePageProps) => {
         <section className="space-y-2">
           <PeopleTable
             people={people ?? []}
-            businesses={businesses}
+            businesses={businesses ?? []}
             tags={tags}
           />
 

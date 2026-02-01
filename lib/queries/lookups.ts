@@ -1,6 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getPeopleLookup = async (supabase: SupabaseClient) => {
+import { Database } from "../types/database";
+
+export const getPeopleLookup = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from("people")
     .select("id, name, business_id")
@@ -10,7 +12,9 @@ export const getPeopleLookup = async (supabase: SupabaseClient) => {
   return data ?? [];
 };
 
-export const getBusinessesLookup = async (supabase: SupabaseClient) => {
+export const getBusinessesLookup = async (
+  supabase: SupabaseClient<Database>,
+) => {
   const { data, error } = await supabase
     .from("businesses")
     .select("id, name")
@@ -20,7 +24,7 @@ export const getBusinessesLookup = async (supabase: SupabaseClient) => {
   return data ?? [];
 };
 
-export const getTagsLookup = async (supabase: SupabaseClient) => {
+export const getTagsLookup = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from("tags")
     .select("id, name")
@@ -30,7 +34,9 @@ export const getTagsLookup = async (supabase: SupabaseClient) => {
   return data ?? [];
 };
 
-export const getCategoriesLookup = async (supabase: SupabaseClient) => {
+export const getCategoriesLookup = async (
+  supabase: SupabaseClient<Database>,
+) => {
   const { data, error } = await supabase
     .from("categories")
     .select("id, name")

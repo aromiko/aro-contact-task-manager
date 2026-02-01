@@ -1,9 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
+import { Database } from "../types/database";
 import { PaginationRange } from "../types/pagination";
 
 export const getTaskCounts = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
 ) => {
   const { data: userBusinesses, error: bizError } = await supabase
@@ -36,7 +37,7 @@ export const getTaskCounts = async (
 };
 
 export const getOpenTasks = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   range: PaginationRange,
 ) => {
@@ -70,7 +71,7 @@ export const getOpenTasks = async (
 };
 
 export const getCompletedTasks = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   range: PaginationRange,
 ) => {
@@ -104,7 +105,7 @@ export const getCompletedTasks = async (
 };
 
 export const getTaskCountByPerson = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   personId: string,
 ) => {
   const { count, error } = await supabase
@@ -118,7 +119,7 @@ export const getTaskCountByPerson = async (
 };
 
 export const getTasksByPerson = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   personId: string,
   range: { from: number; to: number },
 ) => {
@@ -142,7 +143,7 @@ export const getTasksByPerson = async (
 };
 
 export const getTaskCountByBusiness = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   businessId: string,
 ) => {
   const { count, error } = await supabase
@@ -159,7 +160,7 @@ export const getTaskCountByBusiness = async (
 };
 
 export const getTasksByBusiness = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   businessId: string,
   range: { from: number; to: number },
 ) => {

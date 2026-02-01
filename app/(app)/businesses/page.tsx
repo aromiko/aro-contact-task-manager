@@ -63,7 +63,7 @@ const BusinessesPage = async (props: BusinessesPageProps) => {
 
         <section className="space-y-2">
           <BusinessesTable
-            businesses={businesses ?? []}
+            businesses={businesses}
             tags={tags}
             categories={categories}
           />

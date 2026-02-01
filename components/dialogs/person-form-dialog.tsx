@@ -25,7 +25,7 @@ type PersonFormDialogProps = {
     name: string;
     email: string | null;
     phone: string | null;
-    business_id: string | null;
+    business_id: string;
     tagIds?: string[];
   };
   businesses: { id: string; name: string }[];
@@ -70,6 +70,7 @@ const PersonFormDialog = ({
           phone: phone || null,
           business_id: selectedBusinessId,
         });
+
         await updatePersonTags(person.id, selectedTags);
       } else {
         const personId = await createPerson({
@@ -78,19 +79,15 @@ const PersonFormDialog = ({
           phone: phone || null,
           business_id: selectedBusinessId,
         });
+
         await updatePersonTags(personId, selectedTags);
       }
 
       closeDialog();
-      setName("");
-      setEmail("");
-      setPhone("");
-      setSelectedBusinessId("");
-      setSelectedTags([]);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to save person";
-      setError(message);
+      setError(
+        error instanceof Error ? error.message : "Failed to save person",
+      );
       throw error;
     }
   };
@@ -159,6 +156,7 @@ const PersonFormDialog = ({
               placeholder="Select tags"
               emptyIndicator="No tags found"
               disabled={isPending}
+              defaultValue={selectedTags}
             />
           </div>
         </div>

@@ -105,18 +105,22 @@ const BusinessesTable = ({
                 )}
               </TableCell>
 
-              {/* Created */}
               <TableCell className="text-muted-foreground text-right">
-                {new Date(business.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
+                {business.created_at
+                  ? new Date(business.created_at).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )
+                  : "—"}
               </TableCell>
 
-              {/* Actions */}
               <TableCell className="space-x-2 text-right">
                 <BusinessFormDialog
+                  key={business.id}
                   business={{
                     id: business.id,
                     name: business.name,

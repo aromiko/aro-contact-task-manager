@@ -2,7 +2,7 @@ export type ISODateString = string;
 
 export interface BaseEntity {
   id: string;
-  created_at: ISODateString;
+  created_at: string | null;
 }
 
 export interface UserOwnedEntity {

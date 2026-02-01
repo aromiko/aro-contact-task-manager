@@ -63,9 +63,6 @@ const BusinessFormDialog = ({
         await updateBusinessCategories(businessId, selectedCategories);
       }
       closeDialog();
-      setName("");
-      setSelectedTags([]);
-      setSelectedCategories([]);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save business";
@@ -110,6 +107,7 @@ const BusinessFormDialog = ({
               placeholder="Select categories"
               emptyIndicator="No categories found"
               disabled={isPending}
+              defaultValue={selectedCategories}
             />
           </div>
 
@@ -122,6 +120,7 @@ const BusinessFormDialog = ({
               placeholder="Select tags"
               emptyIndicator="No tags found"
               disabled={isPending}
+              defaultValue={selectedTags}
             />
           </div>
         </div>

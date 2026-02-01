@@ -4,6 +4,6 @@ export interface Person extends BaseEntity {
   name: string;
   email: string | null;
   phone: string | null;
-  business: NamedRef | null;
+  business: NamedRef;
   tags: NamedRef[];
 }

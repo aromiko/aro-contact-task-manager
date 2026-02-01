@@ -1,9 +1,10 @@
+import { Database } from "@/lib/types/database";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 import { PaginationRange } from "../types/pagination";
 
 export const getBusinessCount = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
 ) => {
   const { count, error } = await supabase
@@ -16,7 +17,7 @@ export const getBusinessCount = async (
 };
 
 export const getBusinesses = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   range: PaginationRange,
 ) => {

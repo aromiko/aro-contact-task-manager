@@ -1,9 +1,10 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
+import { Database } from "../types/database";
 import { PaginationRange } from "../types/pagination";
 
 export const getPeopleCount = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
 ) => {
   const { data: userBusinesses, error: bizError } = await supabase
@@ -30,7 +31,7 @@ export const getPeopleCount = async (
 };
 
 export const getPeople = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   range: { from: number; to: number },
 ) => {
@@ -64,7 +65,7 @@ export const getPeople = async (
       )
     `,
     )
-    .in("business_id", businessIds) // Scope to user's businesses
+    .in("business_id", businessIds)
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 
@@ -86,7 +87,7 @@ export const getPeople = async (
 };
 
 export const getPeopleByBusiness = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   businessId: string,
   range: PaginationRange,
 ) => {
