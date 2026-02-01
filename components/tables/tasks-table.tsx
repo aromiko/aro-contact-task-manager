@@ -152,13 +152,15 @@ const TasksTable = ({
                   <TableCell className="font-medium">{task.title}</TableCell>
 
                   <TableCell className="text-muted-foreground">
-                    {new Date(task.created_at).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {task.created_at
+                      ? new Date(task.created_at).toLocaleString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
                   </TableCell>
 
                   {!hideAssignedTo && (

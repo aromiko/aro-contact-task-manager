@@ -37,9 +37,9 @@ const AssignTaskDialog = ({ taskId, people, businesses }: Props) => {
 
     startTransition(async () => {
       if (type === "person") {
-        await assignTask(taskId, { personId: selectedId });
+        await assignTask(taskId, { person_id: selectedId });
       } else {
-        await assignTask(taskId, { businessId: selectedId });
+        await assignTask(taskId, { business_id: selectedId });
       }
       setOpen(false);
       setSelectedId(null);

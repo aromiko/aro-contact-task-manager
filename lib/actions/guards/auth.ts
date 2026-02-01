@@ -1,13 +1,15 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import { AuthClient } from "@/lib/types/auth";
 
-export const requireUser = async (supabase: SupabaseClient) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const requireUser = async (client: AuthClient) => {
+  const { data, error } = await client.auth.getUser();
 
-  if (!user) {
+  if (error) {
+    throw error;
+  }
+
+  if (!data?.user) {
     throw new Error("Authentication required");
   }
 
-  return user;
+  return data.user;
 };

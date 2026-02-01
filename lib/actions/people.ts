@@ -8,9 +8,15 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
+import type { TablesInsert, TablesUpdate } from "../types/database";
 import { requireUser } from "./guards/auth";
 import { assertBusinessOwnership } from "./guards/business";
 import { assertPersonAccess } from "./guards/people";
+
+const revalidatePersonPaths = (businessId: string) => {
+  revalidatePath("/people");
+  revalidatePath(`/businesses/${businessId}`);
+};
 
 export const createPerson = async (input: unknown) => {
   try {
@@ -21,23 +27,24 @@ export const createPerson = async (input: unknown) => {
 
     await assertBusinessOwnership(supabase, validated.business_id, user.id);
 
+    const insert: TablesInsert<"people"> = {
+      name: validated.name,
+      email: validated.email ?? null,
+      phone: validated.phone ?? null,
+      business_id: validated.business_id,
+    };
+
     const { data, error } = await supabase
       .from("people")
-      .insert({
-        name: validated.name,
-        email: validated.email || null,
-        phone: validated.phone || null,
-        business_id: validated.business_id,
-      })
+      .insert(insert)
       .select("id")
-      .single();
+      .single<{ id: string }>();
 
     if (error) {
       throw new Error("Failed to create person");
     }
 
-    revalidatePath("/people");
-    revalidatePath(`/businesses/${validated.business_id}`);
+    revalidatePersonPaths(validated.business_id);
     return data.id;
   } catch (error) {
     const actionError = handleActionError(error);
@@ -46,6 +53,7 @@ export const createPerson = async (input: unknown) => {
           .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
           .join("\n")
       : actionError.message;
+
     throw new Error(errorMessage);
   }
 };
@@ -66,14 +74,16 @@ export const updatePerson = async (personId: string, input: unknown) => {
       user.id,
     );
 
+    const updates: TablesUpdate<"people"> = {
+      name: validated.name,
+      email: validated.email ?? null,
+      phone: validated.phone ?? null,
+      business_id: validated.business_id ?? person.business_id,
+    };
+
     const { error } = await supabase
       .from("people")
-      .update({
-        name: validated.name,
-        email: validated.email || null,
-        phone: validated.phone || null,
-        business_id: validated.business_id ?? person.business_id,
-      })
+      .update(updates)
       .eq("id", validated.personId)
       .eq("business_id", person.business_id);
 
@@ -81,8 +91,7 @@ export const updatePerson = async (personId: string, input: unknown) => {
       throw new Error("Failed to update person");
     }
 
-    revalidatePath("/people");
-    revalidatePath(`/businesses/${person.business_id}`);
+    revalidatePersonPaths(person.business_id);
   } catch (error) {
     const actionError = handleActionError(error);
     const errorMessage = actionError.fields
@@ -90,18 +99,19 @@ export const updatePerson = async (personId: string, input: unknown) => {
           .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
           .join("\n")
       : actionError.message;
+
     throw new Error(errorMessage);
   }
 };
 
 export const deletePerson = async (personId: string) => {
   try {
-    const supabase = await createSupabaseServerClient();
-    const user = await requireUser(supabase);
-
     if (!personId) {
       throw new Error("Invalid person");
     }
+
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
 
     const person = await assertPersonAccess(supabase, personId, user.id);
 
@@ -115,8 +125,7 @@ export const deletePerson = async (personId: string) => {
       throw new Error("Failed to delete person");
     }
 
-    revalidatePath("/people");
-    revalidatePath(`/businesses/${person.business_id}`);
+    revalidatePersonPaths(person.business_id);
   } catch (error) {
     const actionError = handleActionError(error);
     throw new Error(actionError.message);
@@ -125,12 +134,12 @@ export const deletePerson = async (personId: string) => {
 
 export const updatePersonTags = async (personId: string, tagIds: string[]) => {
   try {
-    const supabase = await createSupabaseServerClient();
-    const user = await requireUser(supabase);
-
     if (!personId) {
       throw new Error("Invalid person");
     }
+
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
 
     const person = await assertPersonAccess(supabase, personId, user.id);
 
@@ -146,7 +155,7 @@ export const updatePersonTags = async (personId: string, tagIds: string[]) => {
     }
 
     if (uniqueTagIds.length > 0) {
-      const rows = uniqueTagIds.map((tagId) => ({
+      const rows: TablesInsert<"person_tags">[] = uniqueTagIds.map((tagId) => ({
         person_id: personId,
         tag_id: tagId,
       }));
@@ -160,8 +169,7 @@ export const updatePersonTags = async (personId: string, tagIds: string[]) => {
       }
     }
 
-    revalidatePath("/people");
-    revalidatePath(`/businesses/${person.business_id}`);
+    revalidatePersonPaths(person.business_id);
   } catch (error) {
     const actionError = handleActionError(error);
     throw new Error(actionError.message);
