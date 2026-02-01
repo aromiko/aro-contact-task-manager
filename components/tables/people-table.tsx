@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deletePerson } from "@/lib/actions/people";
-import { Person } from "@/lib/types/people";
+import { PersonTableItem } from "@/lib/types/people";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,7 +19,7 @@ import PersonFormDialog from "../dialogs/person-form-dialog";
 import { Badge } from "../ui/badge";
 
 type PeopleTableProps = {
-  people: Person[];
+  people: PersonTableItem[];
   businesses: { id: string; name: string }[];
   tags: { id: string; name: string }[];
 };
@@ -99,16 +99,19 @@ const PeopleTable = ({ people, businesses, tags }: PeopleTableProps) => {
               </TableCell>
 
               <TableCell className="text-muted-foreground text-right">
-                {new Date(person.created_at).toLocaleString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {person.created_at
+                  ? new Date(person.created_at).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "—"}
               </TableCell>
               <TableCell className="space-x-2 text-right">
                 <PersonFormDialog
+                  key={person.id}
                   person={{
                     id: person.id,
                     name: person.name,

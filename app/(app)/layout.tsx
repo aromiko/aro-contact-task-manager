@@ -1,11 +1,12 @@
 import "@/app/assets/styles/globals.css";
+import { AppErrorBoundary } from "@/components/errors/app-error-boundary";
 import MainNav from "@/components/header/main-nav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +40,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <MainNav user={user} />
-        <main className="min-h-screen w-full">{children}</main>
+        <AppErrorBoundary>{children}</AppErrorBoundary>
       </body>
     </html>
   );

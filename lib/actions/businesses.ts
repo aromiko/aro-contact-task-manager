@@ -1,84 +1,240 @@
 "use server";
 
+import {
+  createBusinessSchema,
+  updateBusinessSchema,
+} from "@/lib/schemas/validation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
-export const createBusiness = async (input: { name: string }) => {
-  const supabase = await createSupabaseServerClient();
+import type { TablesInsert, TablesUpdate } from "../types/database";
+import { requireUser } from "./guards/auth";
+import { assertBusinessOwnership } from "./guards/business";
 
-  const { data, error } = await supabase
-    .from("businesses")
-    .insert(input)
-    .select("id")
-    .single();
-
-  if (error) throw error;
-
+const revalidateBusinessPaths = (businessId?: string) => {
   revalidatePath("/businesses");
-  return data.id;
+
+  if (businessId) {
+    revalidatePath(`/businesses/${businessId}`);
+  }
 };
 
-export const updateBusiness = async (id: string, input: { name: string }) => {
-  const supabase = await createSupabaseServerClient();
+export const createBusiness = async (input: unknown) => {
+  try {
+    const validated = createBusinessSchema.parse(input);
 
-  const { error } = await supabase
-    .from("businesses")
-    .update(input)
-    .eq("id", id);
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
 
-  if (error) throw error;
+    const insert: TablesInsert<"businesses"> = {
+      name: validated.name,
+      owner_id: user.id,
+    };
 
-  revalidatePath("/businesses");
-  revalidatePath(`/businesses/${id}`);
+    const { data, error } = await supabase
+      .from("businesses")
+      .insert(insert)
+      .select("id")
+      .single<{ id: string }>();
+
+    if (error) {
+      throw new Error("Failed to create business");
+    }
+
+    revalidateBusinessPaths();
+    return data.id;
+  } catch (error) {
+    const actionError = handleActionError(error);
+    const errorMessage = actionError.fields
+      ? Object.entries(actionError.fields)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
+      : actionError.message;
+
+    throw new Error(errorMessage);
+  }
+};
+
+export const updateBusiness = async (id: string, input: unknown) => {
+  try {
+    const validated = updateBusinessSchema.parse({
+      id,
+      ...(typeof input === "object" && input !== null ? input : {}),
+    });
+
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
+
+    await assertBusinessOwnership(supabase, validated.id, user.id);
+
+    const updates: TablesUpdate<"businesses"> = {
+      name: validated.name,
+    };
+
+    const { error } = await supabase
+      .from("businesses")
+      .update(updates)
+      .eq("id", validated.id)
+      .eq("owner_id", user.id);
+
+    if (error) {
+      throw new Error("Failed to update business");
+    }
+
+    revalidateBusinessPaths(validated.id);
+  } catch (error) {
+    const actionError = handleActionError(error);
+    const errorMessage = actionError.fields
+      ? Object.entries(actionError.fields)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
+      : actionError.message;
+
+    throw new Error(errorMessage);
+  }
 };
 
 export const updateBusinessTags = async (
   businessId: string,
   tagIds: string[],
 ) => {
-  const supabase = await createSupabaseServerClient();
+  try {
+    if (!businessId) {
+      throw new Error("Invalid business ID");
+    }
 
-  await supabase.from("business_tags").delete().eq("business_id", businessId);
+    if (!Array.isArray(tagIds)) {
+      throw new Error("Invalid tag IDs");
+    }
 
-  if (tagIds.length) {
-    await supabase.from("business_tags").insert(
-      tagIds.map((tagId) => ({
-        business_id: businessId,
-        tag_id: tagId,
-      })),
-    );
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
+
+    await assertBusinessOwnership(supabase, businessId, user.id);
+
+    const uniqueTagIds = Array.from(new Set(tagIds.filter(Boolean)));
+
+    const { error: deleteError } = await supabase
+      .from("business_tags")
+      .delete()
+      .eq("business_id", businessId);
+
+    if (deleteError) throw deleteError;
+
+    if (uniqueTagIds.length > 0) {
+      const rows: TablesInsert<"business_tags">[] = uniqueTagIds.map(
+        (tagId) => ({
+          business_id: businessId,
+          tag_id: tagId,
+        }),
+      );
+
+      const { error: insertError } = await supabase
+        .from("business_tags")
+        .insert(rows);
+
+      if (insertError) throw insertError;
+    }
+
+    revalidateBusinessPaths(businessId);
+  } catch (error) {
+    const actionError = handleActionError(error);
+    const errorMessage = actionError.fields
+      ? Object.entries(actionError.fields)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
+      : actionError.message;
+
+    throw new Error(errorMessage);
   }
-
-  revalidatePath("/businesses");
 };
 
 export const updateBusinessCategories = async (
   businessId: string,
   categoryIds: string[],
 ) => {
-  const supabase = await createSupabaseServerClient();
+  try {
+    if (!businessId) {
+      throw new Error("Invalid business ID");
+    }
 
-  await supabase
-    .from("business_categories")
-    .delete()
-    .eq("business_id", businessId);
+    if (!Array.isArray(categoryIds)) {
+      throw new Error("Invalid category IDs");
+    }
 
-  if (categoryIds.length) {
-    await supabase.from("business_categories").insert(
-      categoryIds.map((categoryId) => ({
-        business_id: businessId,
-        category_id: categoryId,
-      })),
-    );
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
+
+    await assertBusinessOwnership(supabase, businessId, user.id);
+
+    const uniqueCategoryIds = Array.from(new Set(categoryIds.filter(Boolean)));
+
+    const { error: deleteError } = await supabase
+      .from("business_categories")
+      .delete()
+      .eq("business_id", businessId);
+
+    if (deleteError) throw deleteError;
+
+    if (uniqueCategoryIds.length > 0) {
+      const rows: TablesInsert<"business_categories">[] = uniqueCategoryIds.map(
+        (categoryId) => ({
+          business_id: businessId,
+          category_id: categoryId,
+        }),
+      );
+
+      const { error: insertError } = await supabase
+        .from("business_categories")
+        .insert(rows);
+
+      if (insertError) throw insertError;
+    }
+
+    revalidateBusinessPaths(businessId);
+  } catch (error) {
+    const actionError = handleActionError(error);
+    const errorMessage = actionError.fields
+      ? Object.entries(actionError.fields)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
+      : actionError.message;
+
+    throw new Error(errorMessage);
   }
-
-  revalidatePath("/businesses");
 };
 
 export const deleteBusiness = async (id: string) => {
-  const supabase = await createSupabaseServerClient();
+  try {
+    if (!id) {
+      throw new Error("Invalid business ID");
+    }
 
-  await supabase.from("businesses").delete().eq("id", id);
+    const supabase = await createSupabaseServerClient();
+    const user = await requireUser(supabase);
 
-  revalidatePath("/businesses");
+    await assertBusinessOwnership(supabase, id, user.id);
+
+    const { error } = await supabase
+      .from("businesses")
+      .delete()
+      .eq("id", id)
+      .eq("owner_id", user.id);
+
+    if (error) {
+      throw new Error("Failed to delete business");
+    }
+
+    revalidateBusinessPaths();
+  } catch (error) {
+    const actionError = handleActionError(error);
+    const errorMessage = actionError.fields
+      ? Object.entries(actionError.fields)
+          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
+          .join("\n")
+      : actionError.message;
+
+    throw new Error(errorMessage);
+  }
 };

@@ -1,6 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getTags = async (supabase: SupabaseClient) => {
+import { Database } from "../types/database";
+
+export const getTags = async (supabase: SupabaseClient<Database>) => {
   const { data, error } = await supabase
     .from("tags")
     .select("id, name")

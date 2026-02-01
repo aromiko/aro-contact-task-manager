@@ -13,8 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { completeTask, deleteTask, reopenTask } from "@/lib/actions/tasks";
-import { Task, TaskAction } from "@/lib/types/task";
-import { normalizeRef } from "@/lib/utils/normalize-ref";
+import { TaskAction, TaskTableItem } from "@/lib/types/task";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -23,21 +22,28 @@ type Option = { id: string; name: string };
 
 type TasksTableProps = {
   tableTitle?: string;
-  tasks: Task[];
+  tasks: TaskTableItem[];
   people?: Option[];
   businesses?: Option[];
   hideAssignedTo?: boolean;
   showPersonOnly?: boolean;
 };
 
-const getAssignment = (task: Task) => {
-  const assignment = Array.isArray(task.task_assignments)
-    ? task.task_assignments[0]
-    : task.task_assignments;
+const getAssignment = (task: TaskTableItem) => {
+  if (!task.assignee) {
+    return { person: null, business: null };
+  }
+
+  if (task.assignee.type === "person") {
+    return {
+      person: task.assignee,
+      business: null,
+    };
+  }
 
   return {
-    person: normalizeRef(assignment?.person),
-    business: normalizeRef(assignment?.business),
+    person: null,
+    business: task.assignee,
   };
 };
 
@@ -45,7 +51,7 @@ const AssignedToCell = ({
   task,
   showPersonOnly,
 }: {
-  task: Task;
+  task: TaskTableItem;
   showPersonOnly?: boolean;
 }) => {
   const { person, business } = getAssignment(task);
@@ -152,13 +158,15 @@ const TasksTable = ({
                   <TableCell className="font-medium">{task.title}</TableCell>
 
                   <TableCell className="text-muted-foreground">
-                    {new Date(task.created_at).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {task.created_at
+                      ? new Date(task.created_at).toLocaleString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "—"}
                   </TableCell>
 
                   {!hideAssignedTo && (
@@ -214,6 +222,7 @@ const TasksTable = ({
                               size="icon"
                               variant="destructive"
                               disabled={isLocked(task.id)}
+                              aria-label="Delete task"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

@@ -1,15 +1,17 @@
-export type Person = {
+import type { NamedRef } from "./base";
+
+export type PersonTableItem = {
   id: string;
   name: string;
   email: string | null;
   phone: string | null;
-  created_at: string;
-  business: {
-    id: string;
-    name: string;
-  } | null;
-  tags: {
-    id: string;
-    name: string;
-  }[];
+  created_at: string | null;
+  business: NamedRef | null;
+  tags: NamedRef[];
+};
+
+export type PersonLookupItem = {
+  id: string;
+  name: string;
+  business_id: string | null;
 };

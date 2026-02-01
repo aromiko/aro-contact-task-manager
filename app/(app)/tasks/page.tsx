@@ -1,5 +1,7 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
+import { mapTaskToTableItem } from "@/components/tables/task-table-mapper";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
 import { getBusinessesLookup, getPeopleLookup } from "@/lib/queries/lookups";
@@ -10,6 +12,9 @@ import {
 } from "@/lib/queries/tasks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
+import { Suspense } from "react";
+
+import Loading from "./loading";
 
 type TasksPageProps = {
   searchParams: Promise<{
@@ -28,7 +33,12 @@ const TasksPage = async (props: TasksPageProps) => {
 
   const supabase = await createSupabaseServerClient();
 
-  const { openCount, completedCount } = await getTaskCounts(supabase);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { openCount, completedCount } = await getTaskCounts(supabase, user.id);
 
   const openPagination = getPagination({
     rawPage: rawOpenPage,
@@ -48,57 +58,71 @@ const TasksPage = async (props: TasksPageProps) => {
     people,
     businesses,
   ] = await Promise.all([
-    getOpenTasks(supabase, openPagination),
-    getCompletedTasks(supabase, completedPagination),
+    getOpenTasks(supabase, user.id, openPagination),
+    getCompletedTasks(supabase, user.id, completedPagination),
     getPeopleLookup(supabase),
     getBusinessesLookup(supabase),
   ]);
 
-  if (openError) return <pre>{openError.message}</pre>;
-  if (completedError) return <pre>{completedError.message}</pre>;
+  if (openError)
+    return (
+      <ErrorFallback error={openError} title="Failed to load open tasks" />
+    );
+  if (completedError)
+    return (
+      <ErrorFallback
+        error={completedError}
+        title="Failed to load completed tasks"
+      />
+    );
+
+  const openTasksItems = (openTasks ?? []).map(mapTaskToTableItem);
+  const completedTasksItems = (completedTasks ?? []).map(mapTaskToTableItem);
 
   return (
-    <div className="container mx-auto space-y-8 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Tasks List</h1>
+    <Suspense fallback={<Loading />}>
+      <div className="container mx-auto space-y-8 p-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold">Tasks List</h1>
 
-        <AddTaskDialog
-          people={people ?? []}
-          businesses={businesses ?? []}
-          trigger={<Button>Add task</Button>}
-        />
+          <AddTaskDialog
+            people={people ?? []}
+            businesses={businesses ?? []}
+            trigger={<Button>Add task</Button>}
+          />
+        </div>
+
+        <section className="space-y-2">
+          <TasksTable
+            tasks={openTasksItems ?? []}
+            tableTitle="Open Tasks"
+            people={people}
+            businesses={businesses}
+          />
+
+          <TablePagination
+            page={openPagination.page}
+            totalPages={openPagination.totalPages}
+            paramKey="openPage"
+          />
+        </section>
+
+        <section className="space-y-2">
+          <TasksTable
+            tasks={completedTasksItems}
+            tableTitle="Completed Tasks"
+            people={people}
+            businesses={businesses}
+          />
+
+          <TablePagination
+            page={completedPagination.page}
+            totalPages={completedPagination.totalPages}
+            paramKey="completedPage"
+          />
+        </section>
       </div>
-
-      <section className="space-y-2">
-        <TasksTable
-          tasks={openTasks ?? []}
-          tableTitle="Open Tasks"
-          people={people}
-          businesses={businesses}
-        />
-
-        <TablePagination
-          page={openPagination.page}
-          totalPages={openPagination.totalPages}
-          paramKey="openPage"
-        />
-      </section>
-
-      <section className="space-y-2">
-        <TasksTable
-          tasks={completedTasks ?? []}
-          tableTitle="Completed Tasks"
-          people={people}
-          businesses={businesses}
-        />
-
-        <TablePagination
-          page={completedPagination.page}
-          totalPages={completedPagination.totalPages}
-          paramKey="completedPage"
-        />
-      </section>
-    </div>
+    </Suspense>
   );
 };
 

@@ -42,7 +42,9 @@ const MainNav = ({ user }: MainNavProps) => {
           </SheetTrigger>
 
           <SheetContent side="left" className="w-64 p-4 pt-3">
-            <div className="mb-6 text-lg font-semibold">Aro Task Manager</div>
+            <Link href="/tasks" className="mb-6 text-lg font-semibold">
+              Aro Task Manager
+            </Link>
 
             <nav className="flex flex-col gap-1">
               {navItems.map((item) => {
@@ -79,9 +81,12 @@ const MainNav = ({ user }: MainNavProps) => {
           </SheetContent>
         </Sheet>
 
-        <span className="text-sm font-semibold md:text-base">
+        <Link
+          href="/tasks"
+          className="text-sm font-semibold hover:underline md:text-base"
+        >
           Aro Task Manager
-        </span>
+        </Link>
 
         {/* Desktop nav */}
         <nav className="ml-6 hidden gap-1 md:flex">

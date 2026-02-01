@@ -1,13 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -23,7 +16,7 @@ import {
   updatePerson,
   updatePersonTags,
 } from "@/lib/actions/people";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 type PersonFormDialogProps = {
   trigger: React.ReactNode;
@@ -45,90 +38,106 @@ const PersonFormDialog = ({
   businesses = [],
   tags = [],
 }: PersonFormDialogProps) => {
-  const [pending, startTransition] = useTransition();
+  const [name, setName] = useState(person?.name ?? "");
+  const [email, setEmail] = useState(person?.email ?? "");
+  const [phone, setPhone] = useState(person?.phone ?? "");
+  const [selectedBusinessId, setSelectedBusinessId] = useState(
+    person?.business_id ?? "",
+  );
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    person?.tagIds ?? [],
+  );
 
-  const action = (formData: FormData) => {
-    startTransition(async () => {
-      const rawBusinessId = formData.get("business_id")?.toString();
+  const handleSubmit = async (
+    closeDialog: () => void,
+    setError: (error: string | null) => void,
+  ) => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
 
-      const name = String(formData.get("name"));
-      const email = formData.get("email")?.toString() || null;
-      const phone = formData.get("phone")?.toString() || null;
-      const business_id =
-        rawBusinessId && rawBusinessId !== "none" ? rawBusinessId : null;
+    if (!selectedBusinessId) {
+      setError("Business is required");
+      return;
+    }
 
-      const tagIds = formData.getAll("tag_ids").map((id) => id.toString());
-
+    try {
       if (person?.id) {
         await updatePerson(person.id, {
           name,
-          email,
-          phone,
-          business_id,
+          email: email || null,
+          phone: phone || null,
+          business_id: selectedBusinessId,
         });
 
-        await updatePersonTags(person.id, tagIds);
+        await updatePersonTags(person.id, selectedTags);
       } else {
         const personId = await createPerson({
           name,
-          email,
-          phone,
-          business_id,
+          email: email || null,
+          phone: phone || null,
+          business_id: selectedBusinessId,
         });
 
-        await updatePersonTags(personId, tagIds);
+        await updatePersonTags(personId, selectedTags);
       }
-    });
+
+      closeDialog();
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to save person",
+      );
+      throw error;
+    }
   };
 
   const tagOptions = tags.map((tag) => ({
     label: tag.name,
     value: tag.id,
   }));
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    person?.tagIds ?? [],
-  );
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{person ? "Edit person" : "Add person"}</DialogTitle>
-        </DialogHeader>
-
-        <form action={action} className="space-y-4">
+    <FormDialog
+      trigger={trigger}
+      title={person ? "Edit person" : "Add person"}
+      onSubmit={handleSubmit}
+    >
+      {({ isPending, setError }) => (
+        <div className="space-y-4">
           <Input
-            name="name"
             placeholder="Name"
-            defaultValue={person?.name}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isPending}
             required
           />
 
           <Input
-            name="email"
             placeholder="Email"
-            defaultValue={person?.email ?? ""}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isPending}
           />
 
           <Input
-            name="phone"
             placeholder="Phone"
-            defaultValue={person?.phone ?? ""}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            disabled={isPending}
           />
 
           <Select
-            name="business_id"
-            defaultValue={person?.business_id ?? "none"}
+            value={selectedBusinessId}
+            onValueChange={setSelectedBusinessId}
+            disabled={isPending}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select business" />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="none">No business</SelectItem>
-
               {businesses.map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
@@ -141,27 +150,18 @@ const PersonFormDialog = ({
             <Label>Tags</Label>
 
             <MultiSelect
-              defaultValue={person?.tagIds ?? []}
               options={tagOptions}
               value={selectedTags}
               onValueChange={setSelectedTags}
               placeholder="Select tags"
               emptyIndicator="No tags found"
+              disabled={isPending}
+              defaultValue={selectedTags}
             />
-
-            {selectedTags.map((tagId) => (
-              <input key={tagId} type="hidden" name="tag_ids" value={tagId} />
-            ))}
           </div>
-
-          <div className="flex justify-end">
-            <Button type="submit" disabled={pending}>
-              {pending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      )}
+    </FormDialog>
   );
 };
 

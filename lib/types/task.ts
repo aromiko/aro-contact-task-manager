@@ -1,28 +1,46 @@
-export type PersonRef = {
-  id: string;
-  name: string;
-};
+import type { Tables } from "@/lib/types/database";
 
-export type BusinessRef = {
-  id: string;
-  name: string;
-};
+export type AssignTaskPayload =
+  | { person_id: string; business_id?: null }
+  | { business_id: string; person_id?: null };
 
-export type TaskAssignment = {
-  person?: PersonRef[] | null;
-  business?: BusinessRef[] | null;
-};
-
-export type TaskAssignPayload =
-  | { personId: string; businessId?: never }
-  | { businessId: string; personId?: never };
-
-export type Task = {
-  id: string;
+export type CreateTaskInput = {
   title: string;
-  status: "open" | "completed";
-  created_at: string;
-  task_assignments?: TaskAssignment | TaskAssignment[];
+  description?: string | null;
+  businessId: string;
+  personId?: string;
 };
+
+export type TaskRow = Tables<"tasks">;
+
+export type TaskAssignmentJoin = {
+  task_assignments:
+    | {
+        person: Tables<"people"> | null;
+        business: Tables<"businesses"> | null;
+      }[]
+    | null;
+};
+
+export type Task = TaskRow & TaskAssignmentJoin;
 
 export type TaskAction = "complete" | "reopen" | "delete";
+
+export type TaskTableItem = {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string | null;
+  assignee:
+    | {
+        type: "person";
+        id: string;
+        name: string;
+      }
+    | {
+        type: "business";
+        id: string;
+        name: string;
+      }
+    | null;
+};

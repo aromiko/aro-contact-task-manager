@@ -1,11 +1,17 @@
 import AddTaskDialog from "@/components/dialogs/add-task-dialog";
+import { ErrorFallback } from "@/components/errors/error-fallback";
 import TablePagination from "@/components/pagination/pagination";
+import { mapTaskToTableItem } from "@/components/tables/task-table-mapper";
 import TasksTable from "@/components/tables/tasks-table";
 import { Button } from "@/components/ui/button";
 import { getTaskCountByPerson, getTasksByPerson } from "@/lib/queries/tasks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPagination } from "@/lib/utils/pagination";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+
+import Loading from "./loading";
 
 type PersonTasksPageProps = {
   params: Promise<{ personId: string }>;
@@ -18,9 +24,20 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
   const { personId } = await props.params;
   const searchParams = await props.searchParams;
 
-  const rawPage = Math.max(1, Number(searchParams.page) || 1);
-
   const supabase = await createSupabaseServerClient();
+
+  // Check if person exists first, before fetching tasks
+  const { data: person } = await supabase
+    .from("people")
+    .select("id, name, business_id")
+    .eq("id", personId)
+    .maybeSingle();
+
+  if (!person) {
+    notFound();
+  }
+
+  const rawPage = Math.max(1, Number(searchParams.page) || 1);
 
   const totalCount = await getTaskCountByPerson(supabase, personId);
 
@@ -36,42 +53,44 @@ const PersonTasksPage = async (props: PersonTasksPageProps) => {
     pagination,
   );
 
-  const { data: person } = await supabase
-    .from("people")
-    .select("name")
-    .eq("id", personId)
-    .single();
+  const taskItems = (tasks ?? []).map(mapTaskToTableItem);
 
-  if (error) return <pre>{error.message}</pre>;
+  if (error)
+    return (
+      <ErrorFallback error={error} title="Failed to load person's tasks" />
+    );
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{person?.name}</h1>
+    <Suspense fallback={<Loading />}>
+      <div className="container mx-auto space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">{person.name}</h1>
 
-        <AddTaskDialog
-          trigger={<Button>Add task</Button>}
-          personId={personId}
+          <AddTaskDialog
+            trigger={<Button>Add task</Button>}
+            personId={personId}
+            businessId={person.business_id ?? undefined}
+          />
+        </div>
+
+        <Link
+          href="/people"
+          className="font-medium text-blue-800 hover:underline"
+        >
+          ← Back to people
+        </Link>
+
+        <div className="mt-6">
+          <TasksTable tasks={taskItems ?? []} hideAssignedTo />
+        </div>
+
+        <TablePagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          paramKey="page"
         />
       </div>
-
-      <Link
-        href="/people"
-        className="font-medium text-blue-800 hover:underline"
-      >
-        ← Back to people
-      </Link>
-
-      <div className="mt-6">
-        <TasksTable tasks={tasks ?? []} hideAssignedTo />
-      </div>
-
-      <TablePagination
-        page={pagination.page}
-        totalPages={pagination.totalPages}
-        paramKey="page"
-      />
-    </div>
+    </Suspense>
   );
 };
 

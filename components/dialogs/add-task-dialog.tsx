@@ -17,14 +17,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createTask } from "@/lib/actions/tasks";
+import { BusinessItem } from "@/lib/types/business";
+import { PersonLookupItem } from "@/lib/types/people";
+import { AlertCircle } from "lucide-react";
 import { useState, useTransition } from "react";
-
-type Option = { id: string; name: string };
 
 type AddTaskDialogProps = {
   trigger: React.ReactNode;
-  people?: Option[];
-  businesses?: Option[];
+  people?: PersonLookupItem[];
+  businesses?: BusinessItem[];
   personId?: string;
   businessId?: string;
 };
@@ -40,32 +41,81 @@ const AddTaskDialog = ({
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"person" | "business" | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const isPersonScoped = Boolean(personId);
   const isBusinessScoped = Boolean(businessId);
 
   const handleCreate = () => {
-    if (!title.trim()) return;
+    setError(null);
+
+    if (!title.trim()) {
+      setError("Task title is required");
+      return;
+    }
+
+    if (!isBusinessScoped && !isPersonScoped && !type) {
+      setError("Please choose where to assign the task");
+      return;
+    }
 
     startTransition(async () => {
-      await createTask({
-        title,
-        personId: isPersonScoped
-          ? personId
-          : !isBusinessScoped && type === "person"
-            ? (selectedId ?? undefined)
-            : undefined,
-        businessId: isBusinessScoped
-          ? businessId
-          : !isPersonScoped && type === "business"
-            ? (selectedId ?? undefined)
-            : undefined,
-      });
+      try {
+        let resolvedBusinessId: string | null = null;
+        let resolvedPersonId: string | undefined = undefined;
 
-      setTitle("");
-      setType(null);
-      setSelectedId(null);
-      setOpen(false);
+        if (isBusinessScoped && businessId) {
+          resolvedBusinessId = businessId;
+        }
+
+        if (isPersonScoped && personId && businessId) {
+          resolvedBusinessId = businessId;
+          resolvedPersonId = personId;
+        }
+
+        if (!isBusinessScoped && !isPersonScoped) {
+          if (type === "business") {
+            resolvedBusinessId = selectedId;
+          }
+
+          if (type === "person") {
+            const person = people?.find((p) => p.id === selectedId);
+            if (!person) {
+              setError("Selected person not found");
+              return;
+            }
+
+            if (!person.business_id) {
+              setError("Selected person has no business assigned");
+              return;
+            }
+
+            resolvedBusinessId = person.business_id;
+            resolvedPersonId = person.id;
+          }
+        }
+
+        if (!resolvedBusinessId) {
+          setError("Unable to resolve business. Please try again.");
+          return;
+        }
+
+        await createTask({
+          title,
+          businessId: resolvedBusinessId,
+          personId: resolvedPersonId,
+        });
+
+        setTitle("");
+        setType(null);
+        setSelectedId(null);
+        setOpen(false);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to create task";
+        setError(message);
+        console.error("Task creation error:", err);
+      }
     });
   };
 
@@ -81,11 +131,20 @@ const AddTaskDialog = ({
         </DialogHeader>
 
         <div className="space-y-4">
+          {error && (
+            <div className="border-destructive/20 bg-destructive/5 flex gap-3 rounded-md border p-3">
+              <AlertCircle className="text-destructive mt-0.5 h-5 w-5 shrink-0" />
+              <p className="text-destructive text-sm">{error}</p>
+            </div>
+          )}
+
           <Input
             placeholder="Task title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isPending}
+            aria-label="Task title"
+            aria-invalid={error ? "true" : "false"}
           />
 
           {!isPersonScoped && !isBusinessScoped && (
@@ -95,8 +154,8 @@ const AddTaskDialog = ({
                 setSelectedId(null);
               }}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Assign to (optional)" />
+              <SelectTrigger className="w-full" aria-label="Assignment type">
+                <SelectValue placeholder="Assign to" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="person">Person</SelectItem>
@@ -106,7 +165,7 @@ const AddTaskDialog = ({
           )}
 
           {!isPersonScoped && !isBusinessScoped && type === "person" && (
-            <Select onValueChange={setSelectedId}>
+            <Select onValueChange={setSelectedId} aria-label="Select person">
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select person" />
               </SelectTrigger>
@@ -121,7 +180,7 @@ const AddTaskDialog = ({
           )}
 
           {!isPersonScoped && !isBusinessScoped && type === "business" && (
-            <Select onValueChange={setSelectedId}>
+            <Select onValueChange={setSelectedId} aria-label="Select business">
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select business" />
               </SelectTrigger>
@@ -137,7 +196,11 @@ const AddTaskDialog = ({
 
           <Button
             className="w-full"
-            disabled={!title.trim() || isPending}
+            disabled={
+              !title.trim() ||
+              isPending ||
+              (!isBusinessScoped && !isPersonScoped && (!type || !selectedId))
+            }
             onClick={handleCreate}
           >
             {isPending ? "Creating…" : "Create Task"}

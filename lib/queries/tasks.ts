@@ -1,17 +1,32 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
+import { Database } from "../types/database";
 import { PaginationRange } from "../types/pagination";
 
-export const getTaskCounts = async (supabase: SupabaseClient) => {
+export const getTaskCounts = async (
+  supabase: SupabaseClient<Database>,
+  userId: string,
+) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   const [{ count: openCount }, { count: completedCount }] = await Promise.all([
     supabase
       .from("tasks")
       .select("id", { count: "exact", head: true })
+      .in("business_id", businessIds) // Scope by user's businesses
       .eq("status", "open"),
 
     supabase
       .from("tasks")
       .select("id", { count: "exact", head: true })
+      .in("business_id", businessIds) // Scope by user's businesses
       .eq("status", "completed"),
   ]);
 
@@ -22,9 +37,19 @@ export const getTaskCounts = async (supabase: SupabaseClient) => {
 };
 
 export const getOpenTasks = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
+  userId: string,
   range: PaginationRange,
 ) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   return supabase
     .from("tasks")
     .select(
@@ -39,15 +64,26 @@ export const getOpenTasks = async (
       )
     `,
     )
+    .in("business_id", businessIds) // Scope by user's businesses
     .eq("status", "open")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 };
 
 export const getCompletedTasks = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
+  userId: string,
   range: PaginationRange,
 ) => {
+  const { data: userBusinesses, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("owner_id", userId);
+
+  if (bizError) throw bizError;
+
+  const businessIds = userBusinesses?.map((b) => b.id) ?? [];
+
   return supabase
     .from("tasks")
     .select(
@@ -62,13 +98,14 @@ export const getCompletedTasks = async (
       )
     `,
     )
+    .in("business_id", businessIds) // Scope by user's businesses
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .range(range.from, range.to);
 };
 
 export const getTaskCountByPerson = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   personId: string,
 ) => {
   const { count, error } = await supabase
@@ -82,7 +119,7 @@ export const getTaskCountByPerson = async (
 };
 
 export const getTasksByPerson = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   personId: string,
   range: { from: number; to: number },
 ) => {
@@ -106,7 +143,7 @@ export const getTasksByPerson = async (
 };
 
 export const getTaskCountByBusiness = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   businessId: string,
 ) => {
   const { count, error } = await supabase
@@ -123,7 +160,7 @@ export const getTaskCountByBusiness = async (
 };
 
 export const getTasksByBusiness = async (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   businessId: string,
   range: { from: number; to: number },
 ) => {
