@@ -11,8 +11,9 @@ import { createSupabaseServerActionClient } from "@/lib/supabase/server-actions"
 import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
+import { ActionResult } from "../types/action";
 import type { TablesInsert, TablesUpdate } from "../types/database";
-import { AssignTaskPayload, CreateTaskInput } from "../types/task";
+import type { AssignTaskPayload, CreateTaskInput } from "../types/task";
 import { requireUser } from "./guards/auth";
 import { assertBusinessOwnership } from "./guards/business";
 import { assertTaskAccess } from "./guards/tasks";
@@ -22,7 +23,7 @@ const revalidateTaskPaths = (businessId: string) => {
   revalidatePath(`/businesses/${businessId}`);
 };
 
-export const completeTask = async (taskId: string) => {
+export const completeTask = async (taskId: string): Promise<ActionResult> => {
   try {
     const validated = completeTaskSchema.parse({ taskId });
     const supabase = await createSupabaseServerActionClient();
@@ -43,13 +44,14 @@ export const completeTask = async (taskId: string) => {
     if (error) throw error;
 
     revalidateTaskPaths(task.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return { success: false, error: handleActionError(error) };
   }
 };
 
-export const reopenTask = async (taskId: string) => {
+export const reopenTask = async (taskId: string): Promise<ActionResult> => {
   try {
     const validated = reopenTaskSchema.parse({ taskId });
     const supabase = await createSupabaseServerActionClient();
@@ -70,16 +72,17 @@ export const reopenTask = async (taskId: string) => {
     if (error) throw error;
 
     revalidateTaskPaths(task.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return { success: false, error: handleActionError(error) };
   }
 };
 
 export const assignTask = async (
   taskId: string,
   payload: AssignTaskPayload,
-) => {
+): Promise<ActionResult> => {
   try {
     const validated = assignTaskSchema.parse({
       taskId,
@@ -100,9 +103,7 @@ export const assignTask = async (
       .delete()
       .eq("task_id", validated.taskId);
 
-    if (deleteError) {
-      throw new Error("Failed to assign task");
-    }
+    if (deleteError) throw deleteError;
 
     if (validated.personId) {
       const assignment: TablesInsert<"task_assignments"> = {
@@ -111,13 +112,11 @@ export const assignTask = async (
         business_id: null,
       };
 
-      const { error: insertError } = await supabase
+      const { error } = await supabase
         .from("task_assignments")
         .insert(assignment);
 
-      if (insertError) {
-        throw new Error("Failed to assign task");
-      }
+      if (error) throw error;
     }
 
     if (validated.businessId) {
@@ -127,24 +126,24 @@ export const assignTask = async (
         business_id: validated.businessId,
       };
 
-      const { error: insertError } = await supabase
+      const { error } = await supabase
         .from("task_assignments")
         .insert(assignment);
 
-      if (insertError) {
-        throw new Error("Failed to assign task");
-      }
+      if (error) throw error;
     }
 
-    revalidatePath("/tasks");
-    revalidatePath(`/businesses/${task.business_id}`);
+    revalidateTaskPaths(task.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return { success: false, error: handleActionError(error) };
   }
 };
 
-export const createTask = async (input: CreateTaskInput) => {
+export const createTask = async (
+  input: CreateTaskInput,
+): Promise<ActionResult<{ id: string }>> => {
   try {
     const validated = createTaskSchema.parse(input);
     const supabase = await createSupabaseServerActionClient();
@@ -183,20 +182,14 @@ export const createTask = async (input: CreateTaskInput) => {
     if (assignmentError) throw assignmentError;
 
     revalidateTaskPaths(validated.businessId);
-    return task.id;
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: { id: task.id } };
+  } catch (error) {
+    return { success: false, error: handleActionError(error) };
   }
 };
 
-export const deleteTask = async (taskId: string) => {
+export const deleteTask = async (taskId: string): Promise<ActionResult> => {
   try {
     const validated = deleteTaskSchema.parse({ id: taskId });
     const supabase = await createSupabaseServerActionClient();
@@ -220,8 +213,9 @@ export const deleteTask = async (taskId: string) => {
     if (error) throw error;
 
     revalidateTaskPaths(task.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return { success: false, error: handleActionError(error) };
   }
 };

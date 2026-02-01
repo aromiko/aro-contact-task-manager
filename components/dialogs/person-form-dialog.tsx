@@ -62,34 +62,60 @@ const PersonFormDialog = ({
       return;
     }
 
-    try {
-      if (person?.id) {
-        await updatePerson(person.id, {
-          name,
-          email: email || null,
-          phone: phone || null,
-          business_id: selectedBusinessId,
-        });
+    if (person?.id) {
+      const result = await updatePerson(person.id, {
+        name,
+        email: email || null,
+        phone: phone || null,
+        business_id: selectedBusinessId,
+      });
 
-        await updatePersonTags(person.id, selectedTags);
-      } else {
-        const personId = await createPerson({
-          name,
-          email: email || null,
-          phone: phone || null,
-          business_id: selectedBusinessId,
-        });
+      if (!result.success) {
+        setError(
+          result.error.fields?.email?.[0] ??
+            result.error.message ??
+            "Failed to update person",
+        );
+        return;
+      }
 
-        await updatePersonTags(personId, selectedTags);
+      const tagsResult = await updatePersonTags(person.id, selectedTags);
+
+      if (!tagsResult.success) {
+        setError(tagsResult.error.message);
+        return;
       }
 
       closeDialog();
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to save person",
-      );
-      throw error;
+      return;
     }
+
+    const result = await createPerson({
+      name,
+      email: email || null,
+      phone: phone || null,
+      business_id: selectedBusinessId,
+    });
+
+    if (!result.success) {
+      setError(
+        result.error.fields?.email?.[0] ??
+          result.error.message ??
+          "Failed to create person",
+      );
+      return;
+    }
+
+    const newPersonId = result.data.id;
+
+    const tagsResult = await updatePersonTags(newPersonId, selectedTags);
+
+    if (!tagsResult.success) {
+      setError(tagsResult.error.message);
+      return;
+    }
+
+    closeDialog();
   };
 
   const tagOptions = tags.map((tag) => ({

@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
+import { ActionResult } from "../types/action";
 import type { TablesInsert, TablesUpdate } from "../types/database";
 import { requireUser } from "./guards/auth";
 import { assertBusinessOwnership } from "./guards/business";
@@ -20,7 +21,9 @@ const revalidateBusinessPaths = (businessId?: string) => {
   }
 };
 
-export const createBusiness = async (input: unknown) => {
+export const createBusiness = async (
+  input: unknown,
+): Promise<ActionResult<{ id: string }>> => {
   try {
     const validated = createBusinessSchema.parse(input);
 
@@ -43,20 +46,20 @@ export const createBusiness = async (input: unknown) => {
     }
 
     revalidateBusinessPaths();
-    return data.id;
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: { id: data.id } };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const updateBusiness = async (id: string, input: unknown) => {
+export const updateBusiness = async (
+  id: string,
+  input: unknown,
+): Promise<ActionResult> => {
   try {
     const validated = updateBusinessSchema.parse({
       id,
@@ -83,29 +86,23 @@ export const updateBusiness = async (id: string, input: unknown) => {
     }
 
     revalidateBusinessPaths(validated.id);
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
 export const updateBusinessTags = async (
   businessId: string,
   tagIds: string[],
-) => {
+): Promise<ActionResult> => {
   try {
-    if (!businessId) {
-      throw new Error("Invalid business ID");
-    }
-
-    if (!Array.isArray(tagIds)) {
-      throw new Error("Invalid tag IDs");
+    if (!businessId || !Array.isArray(tagIds)) {
+      throw new Error("Invalid input");
     }
 
     const supabase = await createSupabaseServerClient();
@@ -120,7 +117,9 @@ export const updateBusinessTags = async (
       .delete()
       .eq("business_id", businessId);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      throw deleteError;
+    }
 
     if (uniqueTagIds.length > 0) {
       const rows: TablesInsert<"business_tags">[] = uniqueTagIds.map(
@@ -134,33 +133,29 @@ export const updateBusinessTags = async (
         .from("business_tags")
         .insert(rows);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        throw insertError;
+      }
     }
 
     revalidateBusinessPaths(businessId);
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
 export const updateBusinessCategories = async (
   businessId: string,
   categoryIds: string[],
-) => {
+): Promise<ActionResult> => {
   try {
-    if (!businessId) {
-      throw new Error("Invalid business ID");
-    }
-
-    if (!Array.isArray(categoryIds)) {
-      throw new Error("Invalid category IDs");
+    if (!businessId || !Array.isArray(categoryIds)) {
+      throw new Error("Invalid input");
     }
 
     const supabase = await createSupabaseServerClient();
@@ -175,7 +170,9 @@ export const updateBusinessCategories = async (
       .delete()
       .eq("business_id", businessId);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      throw deleteError;
+    }
 
     if (uniqueCategoryIds.length > 0) {
       const rows: TablesInsert<"business_categories">[] = uniqueCategoryIds.map(
@@ -189,23 +186,23 @@ export const updateBusinessCategories = async (
         .from("business_categories")
         .insert(rows);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        throw insertError;
+      }
     }
 
     revalidateBusinessPaths(businessId);
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const deleteBusiness = async (id: string) => {
+export const deleteBusiness = async (id: string): Promise<ActionResult> => {
   try {
     if (!id) {
       throw new Error("Invalid business ID");
@@ -227,14 +224,12 @@ export const deleteBusiness = async (id: string) => {
     }
 
     revalidateBusinessPaths();
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };

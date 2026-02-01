@@ -1,15 +1,6 @@
 import { ZodError } from "zod";
 
-export type ActionError = {
-  type:
-    | "validation"
-    | "unauthorized"
-    | "not_found"
-    | "conflict"
-    | "server_error";
-  message: string;
-  fields?: Record<string, string[]>;
-};
+import { ActionError } from "../types/action";
 
 export function parseValidationError(error: ZodError): ActionError {
   const fields: Record<string, string[]> = {};
