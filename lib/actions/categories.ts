@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
+import { ActionResult } from "../types/action";
 import type { TablesInsert, TablesUpdate } from "../types/database";
 import { requireUser } from "./guards/auth";
 import { assertCategoryOwnership } from "./guards/categories";
@@ -24,7 +25,9 @@ const normalizeCategoryName = (name: string) => {
   return value;
 };
 
-export const createCategory = async (name: string) => {
+export const createCategory = async (
+  name: string,
+): Promise<ActionResult<{ id: string }>> => {
   try {
     const value = normalizeCategoryName(name);
 
@@ -36,20 +39,31 @@ export const createCategory = async (name: string) => {
       user_id: user.id,
     };
 
-    const { error } = await supabase.from("categories").insert(insert);
+    const { data, error } = await supabase
+      .from("categories")
+      .insert(insert)
+      .select("id")
+      .single<{ id: string }>();
 
     if (error) {
       throw new Error("Failed to create category");
     }
 
     revalidatePath("/categories");
+
+    return { success: true, data: { id: data.id } };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const updateCategory = async (id: string, name: string) => {
+export const updateCategory = async (
+  id: string,
+  name: string,
+): Promise<ActionResult> => {
   try {
     if (!id) {
       throw new Error("Invalid category");
@@ -77,13 +91,17 @@ export const updateCategory = async (id: string, name: string) => {
     }
 
     revalidatePath("/categories");
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const deleteCategory = async (id: string) => {
+export const deleteCategory = async (id: string): Promise<ActionResult> => {
   try {
     if (!id) {
       throw new Error("Invalid category");
@@ -105,8 +123,12 @@ export const deleteCategory = async (id: string) => {
     }
 
     revalidatePath("/categories");
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };

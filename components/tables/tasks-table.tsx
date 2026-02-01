@@ -113,11 +113,17 @@ const TasksTable = ({
   const runAction = (
     id: string,
     action: TaskAction,
-    fn: () => Promise<void>,
+    fn: () => Promise<{ success: boolean }>,
   ) => {
     setPendingTask({ id, action });
+
     startTransition(async () => {
-      await fn();
+      const result = await fn();
+
+      if (!result.success) {
+        console.error("Task action failed");
+      }
+
       setPendingTask(null);
     });
   };

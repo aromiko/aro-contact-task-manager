@@ -52,23 +52,70 @@ const BusinessFormDialog = ({
       return;
     }
 
-    try {
-      if (business?.id) {
-        await updateBusiness(business.id, { name });
-        await updateBusinessTags(business.id, selectedTags);
-        await updateBusinessCategories(business.id, selectedCategories);
-      } else {
-        const businessId = await createBusiness({ name });
-        await updateBusinessTags(businessId, selectedTags);
-        await updateBusinessCategories(businessId, selectedCategories);
+    if (business?.id) {
+      const updateResult = await updateBusiness(business.id, { name });
+
+      if (!updateResult.success) {
+        setError(
+          updateResult.error.fields?.name?.[0] ??
+            updateResult.error.message ??
+            "Failed to update business",
+        );
+        return;
       }
+
+      const tagsResult = await updateBusinessTags(business.id, selectedTags);
+
+      if (!tagsResult.success) {
+        setError(tagsResult.error.message);
+        return;
+      }
+
+      const categoriesResult = await updateBusinessCategories(
+        business.id,
+        selectedCategories,
+      );
+
+      if (!categoriesResult.success) {
+        setError(categoriesResult.error.message);
+        return;
+      }
+
       closeDialog();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to save business";
-      setError(message);
-      throw err;
+      return;
     }
+
+    const createResult = await createBusiness({ name });
+
+    if (!createResult.success) {
+      setError(
+        createResult.error.fields?.name?.[0] ??
+          createResult.error.message ??
+          "Failed to create business",
+      );
+      return;
+    }
+
+    const newBusinessId = createResult.data.id;
+
+    const tagsResult = await updateBusinessTags(newBusinessId, selectedTags);
+
+    if (!tagsResult.success) {
+      setError(tagsResult.error.message);
+      return;
+    }
+
+    const categoriesResult = await updateBusinessCategories(
+      newBusinessId,
+      selectedCategories,
+    );
+
+    if (!categoriesResult.success) {
+      setError(categoriesResult.error.message);
+      return;
+    }
+
+    closeDialog();
   };
 
   const tagOptions = tags.map((tag) => ({

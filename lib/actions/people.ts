@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { handleActionError } from "@/lib/utils/action-error";
 import { revalidatePath } from "next/cache";
 
+import { ActionResult } from "../types/action";
 import type { TablesInsert, TablesUpdate } from "../types/database";
 import { requireUser } from "./guards/auth";
 import { assertBusinessOwnership } from "./guards/business";
@@ -18,7 +19,9 @@ const revalidatePersonPaths = (businessId: string) => {
   revalidatePath(`/businesses/${businessId}`);
 };
 
-export const createPerson = async (input: unknown) => {
+export const createPerson = async (
+  input: unknown,
+): Promise<ActionResult<{ id: string }>> => {
   try {
     const validated = createPersonSchema.parse(input);
 
@@ -45,20 +48,20 @@ export const createPerson = async (input: unknown) => {
     }
 
     revalidatePersonPaths(validated.business_id);
-    return data.id;
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: { id: data.id } };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const updatePerson = async (personId: string, input: unknown) => {
+export const updatePerson = async (
+  personId: string,
+  input: unknown,
+): Promise<ActionResult> => {
   try {
     const validated = updatePersonSchema.parse({
       personId,
@@ -92,19 +95,17 @@ export const updatePerson = async (personId: string, input: unknown) => {
     }
 
     revalidatePersonPaths(person.business_id);
-  } catch (error) {
-    const actionError = handleActionError(error);
-    const errorMessage = actionError.fields
-      ? Object.entries(actionError.fields)
-          .map(([field, messages]) => `${field}: ${messages.join(", ")}`)
-          .join("\n")
-      : actionError.message;
 
-    throw new Error(errorMessage);
+    return { success: true, data: undefined };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const deletePerson = async (personId: string) => {
+export const deletePerson = async (personId: string): Promise<ActionResult> => {
   try {
     if (!personId) {
       throw new Error("Invalid person");
@@ -126,13 +127,20 @@ export const deletePerson = async (personId: string) => {
     }
 
     revalidatePersonPaths(person.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
 
-export const updatePersonTags = async (personId: string, tagIds: string[]) => {
+export const updatePersonTags = async (
+  personId: string,
+  tagIds: string[],
+): Promise<ActionResult> => {
   try {
     if (!personId) {
       throw new Error("Invalid person");
@@ -170,8 +178,12 @@ export const updatePersonTags = async (personId: string, tagIds: string[]) => {
     }
 
     revalidatePersonPaths(person.business_id);
+
+    return { success: true, data: undefined };
   } catch (error) {
-    const actionError = handleActionError(error);
-    throw new Error(actionError.message);
+    return {
+      success: false,
+      error: handleActionError(error),
+    };
   }
 };
