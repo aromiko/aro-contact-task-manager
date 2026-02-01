@@ -2,7 +2,7 @@ import "@/app/assets/styles/globals.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Aro | Task and Contact Manager",
+  title: "Aro Task Contact Manager",
   description: "Manage your tasks and contacts efficiently.",
 };
 

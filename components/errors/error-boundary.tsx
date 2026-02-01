@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 import { Button } from "../ui/button";
@@ -64,6 +65,8 @@ interface DefaultErrorFallbackProps {
 }
 
 function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
+  const router = useRouter();
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="border-destructive/20 bg-destructive/5 w-full max-w-md rounded-lg border p-6">
@@ -88,10 +91,7 @@ function DefaultErrorFallback({ error, onReset }: DefaultErrorFallbackProps) {
             Try again
           </Button>
 
-          <Button
-            onClick={() => (window.location.href = "/")}
-            variant="outline"
-          >
+          <Button onClick={() => router.replace("/")} variant="outline">
             Go home
           </Button>
         </div>

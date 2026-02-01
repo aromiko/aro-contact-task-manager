@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const SignupPage = () => {
   const supabase = createSupabaseBrowserClient();
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +35,7 @@ const SignupPage = () => {
     if (error) {
       setError(error.message);
     } else {
-      window.location.href = "/tasks";
+      router.replace("/tasks");
     }
   };
 
