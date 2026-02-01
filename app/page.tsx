@@ -1,7 +1,5 @@
 import { redirect } from "next/navigation";
 
-const Home = () => {
+export default function RootPage() {
   redirect("/tasks");
-};
-
-export default Home;
+}

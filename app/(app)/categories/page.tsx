@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { deleteCategory } from "@/lib/actions/categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const metadata = {
+  title: "Categories",
+};
+
 const CategoriesPage = async () => {
   const supabase = await createSupabaseServerClient();
 

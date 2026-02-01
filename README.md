@@ -1,94 +1,103 @@
 # Contact & Task Manager
 
-A modern contact and task management application built with Next.js 16, Supabase, and Tailwind CSS.  
-Designed with clean architecture, scalable data patterns, and a responsive user experience in mind.
+A modern contact and task management application built with Next.js and Supabase, focused on clean architecture, predictable data access, and long-term maintainability.
 
-🔗 **Live Site:**  
+🔗 **Live Site**  
 https://aro-contact-task-manager.vercel.app/
 
 ---
 
 ## Demo Access
 
-You can explore the app using the demo account below if you prefer not to sign up.
+A demo account is available for evaluation without registration.
 
 **Email:** demo@miko-aro.com  
 **Password:** Demo1234
 
+**Signup Page:** https://aro-contact-task-manager.vercel.app/signup
+
 ---
 
-## Features
+## Core Features
 
 ### Task Management
 
 - Create, update, and delete tasks
-- Separate views for open and completed tasks
+- Separate tables for open and completed tasks
 - Server-side pagination
-- Tag-based organization
-- Clean table UI using shadcn components
 
 ### People Management
 
-- Full CRUD for contacts
-- Assign contacts to businesses
-- Tag people for flexible grouping
-- Scalable pagination-ready architecture
+- Full CRUD for People
+- Assign people to businesses
+- Assign people with tags
+- Pagination-ready data access patterns
 
 ### Business Management
 
 - Create and manage businesses
 - Assign tags and categories
-- Link businesses to people
-- Clean edit and create flows with reusable dialogs
+- Associate businesses with people
+- Reusable create and edit dialogs for consistent UX
 
 ### Tags & Categories
 
-- Centralized tag and category management
-- Reusable across tasks, people, and businesses
-- Designed for future expansion
+- Centralized management of tags and categories
+- Reusable across people, and businesses
+- Designed for future extensibility
 
 ### Authentication
 
-- Secure authentication powered by Supabase
-- Protected routes
-- Demo account support
+- Secure authentication powered by Supabase Auth
+- Middleware-protected routes
+- Demo account support for evaluation
 
 ### UI & UX
 
-- shadcn/ui components
-- Accessible dialogs and sheets
+- Component system based on shadcn/ui
+- Accessible dialogs and forms
+- Responsive layout optimized for desktop workflows
 
 ---
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
-- **Database:** PostgreSQL (via Supabase)
-- **Authentication:** JWT-based authentication via Supabase Auth
-- **UI Components:** shadcn/ui
+- **Framework:** Next.js 16 (App Router)
+- **Database:** PostgreSQL via Supabase
+- **Authentication:** Supabase Auth (JWT-based)
 - **Styling:** Tailwind CSS v4
-- **State & Data:** Server Actions + Supabase queries
+- **UI Components:** shadcn/ui
+- **Data & State:** Server Actions with server-side Supabase queries
 - **Deployment:** Vercel
 
 ---
 
-## Architecture Highlights
+## Architecture Overview
 
-- App Router-first design
-- Server Actions isolated in `lib/actions`
+The application is structured around a clear separation of concerns:
+
+- App Router-first design using server components by default
 - Read queries isolated in `lib/queries`
-- Clean page orchestration
-- Reusable form dialogs for create and edit flows
-- Pagination-ready queries across features
-- No client-side data fetching for core CRUD operations
+- Write operations isolated in `lib/actions`
+- Client components limited to interactivity and presentation
+- Page files focused on orchestration rather than business logic
+- Reusable dialog-based forms for create and edit flows
+- Pagination-ready queries across all core features
 
-This architecture keeps the codebase predictable, testable, and easy to extend.
+This structure keeps the codebase predictable, testable, and easy to extend as the feature set grows.
 
+---
 
 ## Architecture & Security Notes
 
-- Built using Next.js App Router with server components handling data fetching
-- Client components are limited to interactivity and UI concerns
-- Supabase Row-Level Security (RLS) is enforced to ensure users can only access their own records
-- All mutations are intended to be validated server-side
-- Route-level loading and error boundaries are implemented for application resilience
+- Data fetching and mutations are handled on the server using Next.js Server Actions
+- Supabase Row-Level Security (RLS) policies are explicitly defined at the database level
+- Route-level loading states and error boundaries are implemented to improve resilience
+
+## Validation & Testing Strategy
+
+The application includes focused unit tests covering critical validation paths using Vitest.
+
+- Input validation is centralized using schema-based validation
+- Tests focus on high-impact flows such as create, update, assign, and delete operations
+- Validation schemas are tested independently from UI and data access layers

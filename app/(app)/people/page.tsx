@@ -12,6 +12,10 @@ import { Suspense } from "react";
 
 import Loading from "./loading";
 
+export const metadata = {
+  title: "People",
+};
+
 type PeoplePageProps = {
   searchParams: {
     page?: string;
