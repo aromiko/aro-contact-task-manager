@@ -16,6 +16,10 @@ import { Suspense } from "react";
 
 import Loading from "./loading";
 
+export const metadata = {
+  title: "Tasks",
+};
+
 type TasksPageProps = {
   searchParams: Promise<{
     openPage?: string;

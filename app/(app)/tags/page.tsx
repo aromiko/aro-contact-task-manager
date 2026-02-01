@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { deleteTag } from "@/lib/actions/tags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const metadata = {
+  title: "Tags",
+};
+
 const TagsPage = async () => {
   const supabase = await createSupabaseServerClient();
 

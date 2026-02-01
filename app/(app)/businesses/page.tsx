@@ -12,6 +12,10 @@ import { Suspense } from "react";
 
 import Loading from "./loading";
 
+export const metadata = {
+  title: "Businesses",
+};
+
 type BusinessesPageProps = {
   searchParams: Promise<{
     page?: string;

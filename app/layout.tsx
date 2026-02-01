@@ -1,4 +1,5 @@
 import "@/app/assets/styles/globals.css";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 const geistSans = Geist({
@@ -10,6 +11,14 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: {
+    default: "Aro Task Contact Manager",
+    template: "%s | Aro Task Contact Manager",
+  },
+  description: "Manage your tasks and contacts efficiently.",
+};
 
 export default function RootLayout({
   children,
