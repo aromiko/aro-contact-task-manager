@@ -13,7 +13,7 @@ export default function NotFound() {
       </div>
 
       <Link href="/tasks">
-        <Button>Back to Tasks</Button>
+        <Button>Go to Tasks Page</Button>
       </Link>
     </div>
   );
